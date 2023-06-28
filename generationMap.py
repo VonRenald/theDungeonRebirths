@@ -8,10 +8,12 @@ VERTICAL = 2
 
 lastDoorId = 0 
 
+VOID = 0
 ROOM = 1
 WALL = 2
 CORRIDOR = 3
 DOOR = 4
+CORNER = 5
 
 
 class Elem:
@@ -40,7 +42,7 @@ class Door:
         self.id = id
         self.idParent = idParent
         self.alignement = alignement
-        self.link = -1
+        self.link = []
 def printGrille(grille):
     print("   ",end='')
     for x in range (0,GRID_W):
@@ -50,14 +52,18 @@ def printGrille(grille):
         print(y%10,end="  ")
         for x in range (0,GRID_W):
             val = grille[x][y]
-            if(val < 2):
+            if(val == VOID):
                 print(" ",end="  ")
+            elif(val == ROOM):
+                print(".",end="  ")
             elif(val == WALL):
                 print("2",end="  ")
             elif(val == CORRIDOR):
                 print("*",end="  ")
             elif(val == DOOR):
-                print(" ",end="  ")
+                print("p",end="  ")
+            elif(val == CORNER):
+                print("4",end="  ")
         print()
 def printGrilleInt(grille):
     for y in range (0,GRID_H):
@@ -85,6 +91,10 @@ def createRooms(grid, roomList, nbRoom, minS, maxS):
                     grid[i][j]=WALL
                 else: 
                     grid[i][j]=ROOM
+        grid[x-1][y-1] = CORNER
+        grid[x+w][y-1] = CORNER
+        grid[x-1][y+h] = CORNER
+        grid[x+w][y+h] = CORNER
 def createDoors(grid, roomList, doorList, minD, maxD):
     global lastDoorId
     id = 0
@@ -96,25 +106,26 @@ def createDoors(grid, roomList, doorList, minD, maxD):
             align = 0
             if cote==1: #gauche
                 x = room.x-1
-                y = random.randint(room.y,room.y+room.h-1)
+                y = random.randint(room.y,room.y+room.h-2)
                 align = HORIZON
             elif cote==2: #haut
-                x = random.randint(room.x,room.x+room.w-1)
+                x = random.randint(room.x,room.x+room.w-2)
                 y = room.y-1
                 align = VERTICAL
             elif cote==3: #droite
                 x = room.x+room.w
-                y = random.randint(room.y,room.y+room.h-1)
+                y = random.randint(room.y,room.y+room.h-2)
                 align = HORIZON
             else: #bas
-                x = random.randint(room.x,room.x+room.w-1)
+                x = random.randint(room.x,room.x+room.w-2)
                 y = room.y+room.h
                 align = VERTICAL
-            grid[x][y] = DOOR
-            door = Door(x,y,align,id,room.id)
-            doorList.append(door)
-            
-            id+=1
+
+            if grid[x][y] != DOOR:
+                grid[x][y] = DOOR
+                door = Door(x,y,align,id,room.id)
+                doorList.append(door)
+                id+=1   
     lastDoorId = id
 def foundRoomId(door,rooms,toNotCheck=[]):
     for room in rooms:
@@ -123,73 +134,157 @@ def foundRoomId(door,rooms,toNotCheck=[]):
             and door.y >= room.y-1 and door.y <= room.y+room.h):
                 return room.id
     return -1
-def cleanDoorWall(grid, doorList, doorListLink, roomList):
+def cleanDoorWall(grid, doorList, doorWallList, roomList):
     global lastDoorId
-    toRemove = []
-    for door in doorList:
+    maxa = len(doorList)
+    i= 0
+    while i < maxa:
+        door = doorList.pop(0)
+        toRemove = False
         if door.alignement == HORIZON:
-            if (door.x -1 > 0 and grid[door.x-1][door.y] == 2): #Si gauche porte mur (surement bug si c'est un angle)
-                grid[door.x-1][door.y] = DOOR
-                lastDoorId += 1
-                parentId = foundRoomId(door,roomList)
-                nDoor = Door(door.x-1,door.y,HORIZON,lastDoorId,parentId)
-                door.link = nDoor.id
-                nDoor.link = door
-                toRemove.append(door)
-                doorListLink.append(door)
-                doorListLink.append(nDoor)
-                print("CAS 1")
-            if (door.x +1 < GRID_W and grid[door.x+1][door.y]==2):#Si droite porte mur (surement bug si c'est un angle)
-                grid[door.x+1][door.y] = DOOR
-                lastDoorId += 1
-                parentId = foundRoomId(door,roomList)
-                nDoor = Door(door.x+1,door.y,HORIZON,lastDoorId,parentId)
-                door.link = nDoor.id
-                nDoor.link = door
-                toRemove.append(door)
-                doorListLink.append(door)
-                doorListLink.append(nDoor)
-            if (door.x-1 >= 0 and door.x+1 < GRID_W and grid[door.x-1][door.y]==1 and grid[door.x+1][door.y]==1):# si porte traversse deux mur
+            if(door.x-1>0):
+                if(grid[door.x-1][door.y] == WALL):#Si gauche porte mur
+                    grid[door.x-1][door.y] = DOOR
+                    lastDoorId += 1
+                    parentId = foundRoomId(door,roomList)
+                    nDoor = Door(door.x-1,door.y,HORIZON,lastDoorId,parentId)
+                    door.link.append(nDoor.id)
+                    nDoor.link.append(door.id)
+                    # toRemove.append(door)
+                    toRemove = True
+                    doorWallList.append(door)
+                    doorWallList.append(nDoor)
+                    print("CAS 1.0")
+                elif(grid[door.x-1][door.y] == CORNER):
+                    if(grid[door.x][door.y+1] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.y+=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    elif(grid[door.x][door.y-1] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.y-=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    else:
+                        toRemove = True
+                    print("CAS 1.1")
+
+
+            if (door.x+1 < GRID_W):#Si droite porte mur 
+                if (grid[door.x+1][door.y]==WALL):
+                    grid[door.x+1][door.y] = DOOR
+                    lastDoorId += 1
+                    parentId = foundRoomId(door,roomList)
+                    nDoor = Door(door.x+1,door.y,HORIZON,lastDoorId,parentId)
+                    door.link.append(nDoor.id)
+                    nDoor.link.append(door.id)
+                    # toRemove.append(door)
+                    toRemove = True
+                    doorWallList.append(door)
+                    doorWallList.append(nDoor)
+                    print("CAS 2.0")
+                elif(grid[door.x+1][door.y]==CORNER):
+                    if(grid[door.x][door.y-1] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.y-=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    elif(grid[door.x][door.y+1] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.y+=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    else:
+                        toRemove = True
+                    print("CAS 2.1")
+
+            if (door.x-1 >= 0 and door.x+1 < GRID_W and grid[door.x-1][door.y]==ROOM and grid[door.x+1][door.y]==ROOM):# si porte traversse deux mur
                 lastDoorId += 1
                 parentId = foundRoomId(door,roomList,[door.idParent])
                 nDoor = Door(door.x,door.y,HORIZON,lastDoorId,parentId)
-                door.link = nDoor.id
-                nDoor.link = door
-                toRemove.append(door)
-                doorListLink.append(door)
-                doorListLink.append(nDoor)
+                door.link.append(nDoor.id)
+                nDoor.link.append(door.id)
+                # toRemove.append(door)
+                toRemove = True
+                doorWallList.append(door)
+                doorWallList.append(nDoor)
+                print("CAS 3.0")
+
         if door.alignement == VERTICAL:
-            if (door.y -1 > 0 and grid[door.x][door.y-1] == 2): #Si haut porte mur (surement bug si c'est un angle)
-                grid[door.x][door.y-1] = DOOR
-                lastDoorId += 1
-                parentId = foundRoomId(door,roomList)
-                nDoor = Door(door.x,door.y-1,VERTICAL,lastDoorId,parentId)
-                door.link = nDoor.id
-                nDoor.link = door
-                toRemove.append(door)
-                doorListLink.append(door)
-                doorListLink.append(nDoor)
-            if (door.y +1 < GRID_H and grid[door.x][door.y+1]==2):#Si droite porte mur (surement bug si c'est un angle)
-                grid[door.x][door.y+1] = DOOR
-                lastDoorId += 1
-                parentId = foundRoomId(door,roomList)
-                nDoor = Door(door.x,door.y+1,VERTICAL,lastDoorId,parentId)
-                door.link = nDoor.id
-                nDoor.link = door
-                toRemove.append(door)
-                doorListLink.append(door)
-                doorListLink.append(nDoor)
-            if (door.y-1 >= 0 and door.y+1 < GRID_H and grid[door.x][door.y-1]==1 and grid[door.x][door.y+1]==1):# si porte traversse deux mur
+            if(door.y-1>0):#Si haut porte mur
+                if(grid[door.x][door.y-1] == WALL):
+                    grid[door.x][door.y-1] = DOOR
+                    lastDoorId += 1
+                    parentId = foundRoomId(door,roomList)
+                    nDoor = Door(door.x,door.y-1,VERTICAL,lastDoorId,parentId)
+                    door.link.append(nDoor.id)
+                    nDoor.link.append(door.id)
+                    # toRemove.append(door)
+                    toRemove = True
+                    doorWallList.append(door)
+                    doorWallList.append(nDoor)
+                    print("CAS 4.0")
+                elif(grid[door.x][door.y-1] == CORNER):
+                    if(grid[door.x+1][door.y] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.x+=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    elif(grid[door.x-1][door.y] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.x-=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    else:
+                        toRemove=True
+                    print("CAS 4.1")
+
+
+            if (door.y+1<GRID_H):#Si droite porte mur
+                if(grid[door.x][door.y+1]==WALL):
+                    grid[door.x][door.y+1] = DOOR
+                    lastDoorId += 1
+                    parentId = foundRoomId(door,roomList)
+                    nDoor = Door(door.x,door.y+1,VERTICAL,lastDoorId,parentId)
+                    door.link.append(nDoor.id)
+                    nDoor.link.append(door.id)
+                    # toRemove.append(door)
+                    toRemove = True
+                    doorWallList.append(door)
+                    doorWallList.append(nDoor)
+                    print("CAS 5.0")
+                elif(grid[door.x][door.y+1]==CORNER):
+                    if(grid[door.x+1][door.y] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.x+=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    elif(grid[door.x-1][door.y] == WALL):
+                        grid[door.x][door.y]=WALL
+                        door.x-=1
+                        grid[door.x][door.y]=DOOR
+                        doorList.insert(0,door)
+                    else:
+                        toRemove=True
+                    print("CAS 5.1")
+            if (door.y-1 >= 0 and door.y+1 < GRID_H and grid[door.x][door.y-1]==ROOM and grid[door.x][door.y+1]==ROOM):# si porte traversse deux mur
                 lastDoorId += 1
                 parentId = foundRoomId(door,roomList,[door.idParent])
                 nDoor = Door(door.x,door.y,VERTICAL,lastDoorId,parentId)
-                door.link = nDoor.id
-                nDoor.link = door
-                toRemove.append(door)
-                doorListLink.append(door)
-                doorListLink.append(nDoor)
-    for elem in toRemove:
-        doorList.remove(elem)
+                door.link.append(nDoor.id)
+                nDoor.link.append(door.id)
+                # toRemove.append(door)
+                toRemove = True
+                doorWallList.append(door)
+                doorWallList.append(nDoor)
+                print("CAS 6.0")
+        if not toRemove:
+            doorList.append(door)
+        i+=1
+        
+    # for elem in toRemove:
+    #     doorList.remove(elem)
 def grid4path(gridPath):
     gridPath
     for x in range(0,GRID_W):
@@ -295,13 +390,29 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
     while len(doorList) > 1:
         door0 = doorList.pop(0)
         door1 = doorList.pop(len(doorList)-1)
-        road = corridor(door0.x,door0.y,door0.alignement,door1.x,door1.y,grid)
-        door0.link = door1.id
-        door1.link = door0.id
-
+        if (door0.id == door1.id or (door0.x == door1.x and door0.y == door1.y)):
+            doorList.append(door0)
+        else:
+            print("ids :",door0.id,door1.id)
+            road = corridor(door0.x,door0.y,door0.alignement,door1.x,door1.y,grid)
+            door0.link.append(door1.id)
+            door1.link.append(door0.id)
+            doorListLinked.append(door0)
+            doorListLinked.append(door1)
+            for coor in road:
+                # print(coor[0],coor[1])
+                rawGrid[coor[0]][coor[1]] = CORRIDOR 
+    if len(doorList) == 1:
+        door0 = doorList.pop(0)
+        i = random.randint(0,len(doorListLinked)-1)
+        road = corridor(door0.x,door0.y,door0.alignement,doorListLinked[i].x,doorListLinked[i].y,grid)
+        doorListLinked[i].link.append(door0.id)
+        door0.link.append(doorListLinked[i].id)
+        doorListLinked.append(door0)
         for coor in road:
             # print(coor[0],coor[1])
             rawGrid[coor[0]][coor[1]] = CORRIDOR 
+        
     printGrille(rawGrid)
 
 
@@ -311,12 +422,13 @@ if __name__ == '__main__':
     roomList = []
     doorList = []
     doorListlink = []
+    doorWallList = []
     for x in range (0,GRID_W):
         for y in range (0,GRID_H):
             renduFinal[x][y] = 0
     createRooms(renduFinal,roomList,4,2,5)
     createDoors(renduFinal,roomList,doorList,1,3)
-    cleanDoorWall(renduFinal,doorList,doorListlink,roomList)
+    cleanDoorWall(renduFinal,doorList,doorWallList,roomList)
     buildCorridors(renduFinal,doorList,doorListlink)
     # printGrille(renduFinal)
     # print("salle",len(roomList))
