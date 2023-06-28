@@ -1,0 +1,66 @@
+----------6789218188069235099271494
+rooms:4
+id:0 x:4 y:5 w:5 h:5
+id:1 x:3 y:15 w:5 h:5
+id:2 x:12 y:15 w:5 h:5
+id:3 x:9 y:17 w:2 h:2
+doorList:0
+doorListlink:3
+id:0 parentId:0 x:9 y:7 alignement:1 link:[2]
+id:2 parentId:2 x:15 y:20 alignement:2 link:[0, 1]
+id:1 parentId:1 x:2 y:17 alignement:1 link:[2]
+doorWallList:2
+id:3 parentId:3 x:8 y:17 alignement:1 link:[5]
+id:5 parentId:None x:8 y:17 alignement:1 link:[3]
+----------1905985980081494822530953
+rooms:4
+id:0 x:8 y:3 w:2 h:4
+id:1 x:7 y:8 w:2 h:4
+id:2 x:8 y:19 w:5 h:2
+id:3 x:13 y:13 w:3 h:4
+doorList:0
+doorListlink:4
+id:0 parentId:0 x:10 y:5 alignement:1 link:[2]
+id:2 parentId:2 x:9 y:18 alignement:2 link:[0]
+id:1 parentId:1 x:6 y:8 alignement:1 link:[3]
+id:3 parentId:3 x:12 y:14 alignement:1 link:[1]
+doorWallList:0
+----------5928949443305345196714337
+rooms:4
+id:0 x:6 y:9 w:5 h:5
+id:1 x:4 y:15 w:5 h:5
+id:2 x:7 y:5 w:5 h:2
+id:3 x:14 y:5 w:3 h:2
+doorList:0
+doorListlink:2
+id:1 parentId:1 x:9 y:18 alignement:1 link:[3]
+id:3 parentId:3 x:17 y:5 alignement:1 link:[1]
+doorWallList:4
+id:0 parentId:0 x:9 y:8 alignement:2 link:[5]
+id:5 parentId:None x:9 y:7 alignement:2 link:[0]
+id:2 parentId:2 x:7 y:7 alignement:2 link:[6]
+id:6 parentId:None x:7 y:8 alignement:2 link:[2]
+----------9091275050519884391296512
+rooms:4
+id:0 x:8 y:14 w:5 h:3
+id:1 x:5 y:18 w:2 h:3
+id:2 x:3 y:3 w:3 h:4
+id:3 x:13 y:18 w:3 h:4
+doorList:0
+doorListlink:3
+id:0 parentId:0 x:8 y:13 alignement:2 link:[2]
+id:1 parentId:1 x:4 y:19 alignement:1 link:[2]
+id:3 parentId:3 x:13 y:22 alignement:2 link:[2]
+doorWallList:0
+----------4125034012492526400608606
+rooms:4
+id:0 x:13 y:19 w:2 h:2
+id:1 x:5 y:12 w:2 h:5
+id:2 x:10 y:13 w:2 h:4
+id:3 x:4 y:4 w:5 h:2
+doorList:0
+doorListlink:3
+id:1 parentId:1 x:5 y:11 alignement:2 link:[0, 2]
+id:0 parentId:0 x:12 y:19 alignement:1 link:[3, 1]
+id:2 parentId:2 x:10 y:17 alignement:2 link:[1]
+doorWallList:0
