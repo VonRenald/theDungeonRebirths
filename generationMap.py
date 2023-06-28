@@ -1,6 +1,7 @@
 import random
+import time
 
-GRID_W = 20
+GRID_W = 35
 GRID_H = 25
 
 HORIZON  = 1
@@ -76,6 +77,7 @@ def printIdList(list):
         print(elem.id,end=",")
     print("]")
 def createRooms(grid, roomList, nbRoom, minS, maxS):
+    loop = 0
     for id in range (0,nbRoom):
         x=0
         y=0
@@ -93,6 +95,9 @@ def createRooms(grid, roomList, nbRoom, minS, maxS):
                     isVoid = isVoid and grid[i][j]==VOID
             stop = isVoid
             # stop = (grid[x][y] == VOID and grid[x+w-1][y] == VOID and grid[x][y+h-1] == VOID and grid[x+w-1][y+h-1] == VOID)
+            loop+=1
+            if loop > 100:
+                print("AAAAAAHHHHHHH")
         room = Room(w,h,x,y,id)
         roomList.append(room)
         for i in range (x-1,x+w+1):
@@ -148,8 +153,13 @@ def foundRoomId(door,rooms,toNotCheck=[]):
     return -1
 def foundRoomCoor(x,y,rooms,toNotCheck=[]):
     for room in rooms:
-        if (x==room.x-1 or x==room.x+room.w) and (y==room.y-1 or y==room.y+room.h) and toNotCheck.count(room.id) == 0:
-            return room.id
+        # print("HELP ------------------------x:",x,room.x-1,room.x+room.w,"y:",y,room.y-1,room.y+room.h)
+        if(toNotCheck.count(room.id) == 0):
+            if (x==room.x-1 or x==room.x+room.w) and (y>room.y-1 or y < room.y+room.h):
+                return room.id
+            elif(y==room.y-1 or y==room.y+room.h) and (x>room.x-1 or x<room.x+room.w):
+                return room.id
+    
     return None 
 def popCoorDoor(list,x,y):
     i=0
@@ -157,6 +167,7 @@ def popCoorDoor(list,x,y):
         if list[i].x == x and list[i].y == y:
             return list.pop(i)
         i+=1
+    
     return None
 def cleanDoorWall(grid, doorList, doorWallList, roomList):
     global lastDoorId
@@ -178,7 +189,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                     toRemove = True
                     doorWallList.append(door)
                     doorWallList.append(nDoor)
-                    print("CAS 1.0")
+                    # print("CAS 1.0")
                 elif(grid[door.x-1][door.y] == CORNER):
                     if(grid[door.x][door.y+1] == WALL):
                         grid[door.x][door.y]=WALL
@@ -192,7 +203,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                         doorList.insert(0,door)
                     else:
                         toRemove = True
-                    print("CAS 1.1")
+                    # print("CAS 1.1")
                 elif(grid[door.x-1][door.y] == DOOR):
                     nDoor = popCoorDoor(doorList,door.x-1,door.y)
                     nDoor.link.append(door.id)
@@ -215,7 +226,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                     toRemove = True
                     doorWallList.append(door)
                     doorWallList.append(nDoor)
-                    print("CAS 2.0")
+                    # print("CAS 2.0")
                 elif(grid[door.x+1][door.y]==CORNER):
                     if(grid[door.x][door.y-1] == WALL):
                         grid[door.x][door.y]=WALL
@@ -229,7 +240,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                         doorList.insert(0,door)
                     else:
                         toRemove = True
-                    print("CAS 2.1")
+                    # print("CAS 2.1")
                 elif(grid[door.x+1][door.y] == DOOR):
                     nDoor = popCoorDoor(doorList,door.x+1,door.y)
                     nDoor.link.append(door.id)
@@ -248,7 +259,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                 toRemove = True
                 doorWallList.append(door)
                 doorWallList.append(nDoor)
-                print("CAS 3.0")
+                # print("CAS 3.0")
 
         if door.alignement == VERTICAL:
             if(door.y-1>0):#Si haut porte mur
@@ -263,7 +274,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                     toRemove = True
                     doorWallList.append(door)
                     doorWallList.append(nDoor)
-                    print("CAS 4.0")
+                    # print("CAS 4.0")
                 elif(grid[door.x][door.y-1] == CORNER):
                     if(grid[door.x+1][door.y] == WALL):
                         grid[door.x][door.y]=WALL
@@ -277,7 +288,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                         doorList.insert(0,door)
                     else:
                         toRemove=True
-                    print("CAS 4.1")
+                    # print("CAS 4.1")
                 elif(grid[door.x][door.y-1] == DOOR):
                     nDoor = popCoorDoor(doorList,door.x,door.y-1)
                     if(nDoor==None):
@@ -301,7 +312,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                     toRemove = True
                     doorWallList.append(door)
                     doorWallList.append(nDoor)
-                    print("CAS 5.0")
+                    # print("CAS 5.0")
                 elif(grid[door.x][door.y+1]==CORNER):
                     if(grid[door.x+1][door.y] == WALL):
                         grid[door.x][door.y]=WALL
@@ -315,7 +326,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                         doorList.insert(0,door)
                     else:
                         toRemove=True
-                    print("CAS 5.1")
+                    # print("CAS 5.1")
                 elif(grid[door.x][door.y+1] == DOOR):
                     nDoor = popCoorDoor(doorList,door.x,door.y+1)
                     nDoor.link.append(door.id)
@@ -334,7 +345,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                 toRemove = True
                 doorWallList.append(door)
                 doorWallList.append(nDoor)
-                print("CAS 6.0")
+                # print("CAS 6.0")
         if not toRemove:
             doorList.append(door)
         i+=1
@@ -360,7 +371,7 @@ def changeDir(dir):
         return VERTICAL
     return HORIZON
 def corridor(sx,sy,dir,tx,ty,grid):
-    print("(",sx,sy,"),(",tx,ty,")")
+    # print("(",sx,sy,"),(",tx,ty,")")
     elemGrid = []
     for x in range(0,GRID_W):
         temp = []
@@ -382,9 +393,11 @@ def corridor(sx,sy,dir,tx,ty,grid):
     occ = 0
     occ2=0
     while len(toSee)>0:
+        # print("2.001")
         occ +=1
         current = toSee.pop(0)
         for i in range(0,4):
+            # print("2.002")
             nx = current.x+driftX[i]
             ny = current.y+driftY[i]
             # print(nx,ny)
@@ -421,17 +434,26 @@ def corridor(sx,sy,dir,tx,ty,grid):
                     elemGrid[nx][ny].py = current.y
                     elemGrid[nx][ny].visited = True
                     toSee.append(elemGrid[nx][ny])
-    print(elemGrid[tx][ty].parentId,occ,occ2)
-     
+        if occ > 1000:
+            print("peut etre la")
+        # print("2.003",occ)
+    # print(elemGrid[tx][ty].parentId,occ,occ2)
+    print("2.004",occ)
     road = []
     nx = elemGrid[tx][ty].px
     ny = elemGrid[tx][ty].py
     road.append((nx,ny))
+    print("2.005",occ)
+    loop = 0
     while not(elemGrid[nx][ny].px == sx and elemGrid[nx][ny].py == sy):
         road.append((elemGrid[nx][ny].px,elemGrid[nx][ny].py))
         a = elemGrid[nx][ny].px
         ny = elemGrid[nx][ny].py
         nx = a
+        loop +=1
+        if loop>1000:
+            print("oui")
+            return None
 
     
     
@@ -441,13 +463,20 @@ def corridor(sx,sy,dir,tx,ty,grid):
     return road
 def buildCorridors(rawGrid,doorList,doorListLinked):
     
+    if(len(doorList)==1):
+        door = doorList.pop(0)
+        rawGrid[door.x][door.y] = WALL
+        return
+    
     grid = copyGrid(rawGrid)
     grid4path(grid)
+    loop = 0
     while len(doorList) > 1:
         door0 = doorList.pop(0)
 
-        
+        print("1")
         stop = False
+        loop2=0
         while not stop:#verifie que les deux porte soit d'une salle differente
             index = random.randint(0,len(doorList)+len(doorListLinked)-1)
             if(index>=len(doorList)):
@@ -455,8 +484,12 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
             else:
                 value = doorList[index].idParent
             stop = value != door0.idParent
-            print("la")
-
+            loop2+=1
+            if loop2>100:
+                print("ici")
+            
+            # print("la")
+        print("2")
         if(index>=len(doorList)):
             door1 = doorListLinked.pop(index-len(doorList))
         else:
@@ -465,9 +498,13 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
         if (door0.id == door1.id or (door0.x == door1.x and door0.y == door1.y)):
             doorList.append(door0)
         else:
-            print("ids :",door0.id,door1.id)
-            print("Pids :",door0.idParent,door1.idParent)
+            print("2.01")
+            # print("ids :",door0.id,door1.id)
+            # print("Pids :",door0.idParent,door1.idParent)
             road = corridor(door0.x,door0.y,door0.alignement,door1.x,door1.y,grid)
+            if road == None:
+                return 1
+            print("2.02")
             door0.link.append(door1.id)
             door1.link.append(door0.id)
             doorListLinked.append(door0)
@@ -475,16 +512,24 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
             for coor in road:
                 # print(coor[0],coor[1])
                 rawGrid[coor[0]][coor[1]] = CORRIDOR 
+        loop+=1
+        if loop >2000:
+            print("laaaaaaaaaa")
+        print("2.2")
+    print("3")
     if len(doorList) == 1:
         door0 = doorList.pop(0)
         i = random.randint(0,len(doorListLinked)-1)
         road = corridor(door0.x,door0.y,door0.alignement,doorListLinked[i].x,doorListLinked[i].y,grid)
+        if road == None:
+            return 1
         doorListLinked[i].link.append(door0.id)
         door0.link.append(doorListLinked[i].id)
         doorListLinked.append(door0)
         for coor in road:
             # print(coor[0],coor[1])
             rawGrid[coor[0]][coor[1]] = CORRIDOR 
+    return 0
 def getListIdDoor(roomId,doors):
     l = []
     for door in doors:
@@ -517,16 +562,18 @@ def popDoor(id,doors):
         i+=1
     return None
 def blockUnique(rawGrid,doorListLinked,doorList,roomList):
-    print("doors :",end="")
-    printIdList(doorList)
+    # print("doors :",end="")
+    # printIdList(doorList)
     StartDoor = doorListLinked.pop(random.randint(0,len(doorListLinked)-1))
     roomAcces = [StartDoor.idParent]
     doorSee = [StartDoor.id]
     door2See = getListIdDoor(StartDoor.id,doorList) + StartDoor.link
     door2See = suprimeDoublonListInt(door2See)
     door2See = supprListAdeB(doorSee,door2See)
-    print("see",doorSee)
-    print("2see",door2See)
+    # print("see",doorSee)
+    # print("2see",door2See)
+    loop = 0
+    print("first loop")
     while len(door2See) > 0:
         currentDoor = getDoor(door2See.pop(0),doorList)
         if(roomAcces.count(currentDoor.idParent)==0):
@@ -535,31 +582,50 @@ def blockUnique(rawGrid,doorListLinked,doorList,roomList):
         doorSee.append(currentDoor.id)
         door2See = suprimeDoublonListInt(door2See)
         door2See = supprListAdeB(doorSee,door2See)
-        print("see",doorSee)
-        print("2see",door2See)
+        loop+=1
+        if loop > 1000:
+            print("HELPPPPPP",loop)
+        # print("see",doorSee)
+        # print("2see",door2See)
 
 
-    print("room acces :",len(roomList),len(roomAcces),len(roomList)==len(roomAcces))
-    print("acces :",roomAcces)
+    # print("room acces :",len(roomList),len(roomAcces),len(roomList)==len(roomAcces))
+    # print("acces :",roomAcces)
     if(len(roomList)>len(roomAcces)):
         #prend une room non accessible
         idRoom = None
-        for room in roomAcces:
-            if(roomList.count(room) == 0):
-                idRoom = room
-        door2link = popDoor(getListIdDoor(idRoom,doorList)[0],doorListLinked)
+        for room in roomList:
+            # print("ROOM",room)
+            isIn = False
+            for ra in roomAcces:
+                isIn = isIn or room.id == ra
+            if not isIn:
+                idRoom = room.id
+                    
+            # if(roomAcces.count(room) == 0):
+            #     idRoom = room.id
+                
+        doorPossible = getListIdDoor(idRoom,doorList)
+        door2link = popDoor(doorPossible[0],doorListLinked)
+        if(door2link == None):
+            return 1
         grid = copyGrid(rawGrid)
         grid4path(grid)
-        print("ids :",StartDoor.id,door2link.id)
-        print("Pids :",StartDoor.idParent,door2link.idParent)
+        # print("ids :",StartDoor.id,door2link.id)
+        # print("Pids :",StartDoor.idParent,door2link.idParent)
         road = corridor(StartDoor.x,StartDoor.y,StartDoor.alignement,door2link.x,door2link.y,grid)
+        if(road == None):
+            return 2
         StartDoor.link.append(door2link.id)
         door2link.link.append(StartDoor.id)
         doorListLinked.append(StartDoor)
         doorListLinked.append(door2link)
         for coor in road:
             rawGrid[coor[0]][coor[1]] = CORRIDOR 
+        # time.sleep(2)
+        print("before loop")
         blockUnique(rawGrid,doorListLinked,doorList,roomList)
+    return 0
 
 
 
@@ -594,6 +660,7 @@ if __name__ == '__main__':
     random.seed()
     seed = random.randint(0,9999999999999999999999999)
     random.seed(seed)
+    print("seeded")
     renduFinal = [[0 for col in range(GRID_H)] for row in range(GRID_W)]
     roomList = []
     doorList = []
@@ -602,27 +669,41 @@ if __name__ == '__main__':
     for x in range (0,GRID_W):
         for y in range (0,GRID_H):
             renduFinal[x][y] = 0
-    createRooms(renduFinal,roomList,4,2,5)
-    createDoors(renduFinal,roomList,doorList,1,1)
+    print("inited grid")
+    createRooms(renduFinal,roomList,9,2,6)
+    print("created rooms")
+    createDoors(renduFinal,roomList,doorList,1,3)
+    print("created door")
     if cleanDoorWall(renduFinal,doorList,doorWallList,roomList) != 0:
-        print("error")
-    printIdList(doorList)
-    printIdList(doorWallList)
-    printIdList(doorListlink)
-    buildCorridors(renduFinal,doorList,doorListlink)
+        print("error 0 ")
+        exit()
+    print("cleaned door wall")
+    # printIdList(doorList)
+    # printIdList(doorWallList)
+    # printIdList(doorListlink)
+    if buildCorridors(renduFinal,doorList,doorListlink) != 0:
+        print("error 2")
+        exit()
+    print("builded corridor")
+    
+    # printGrille(renduFinal)
+
+    # print("doorList:",end="")
+    # printIdList(doorList)
+    # print("doorListlink:",end="")
+    # printIdList(doorListlink)
+    # print("doorWallList:",end="")
+    # printIdList(doorWallList)
+    writeLog(seed,roomList,doorList,doorListlink,doorWallList)
+    print("loged")
+    if blockUnique(renduFinal,doorListlink,doorList+doorListlink+doorWallList,roomList) == 1:
+        print("error 1")
+        exit()
+    print("checked block")
+    # print("roomList:",end="")
+    # printIdList(roomList)
     
     printGrille(renduFinal)
-
-    print("doorList:",end="")
-    printIdList(doorList)
-    print("doorListlink:",end="")
-    printIdList(doorListlink)
-    print("doorWallList:",end="")
-    printIdList(doorWallList)
-    blockUnique(renduFinal,doorListlink,doorList+doorListlink+doorWallList,roomList)
-    print("roomList:",end="")
-    printIdList(roomList)
-    writeLog(seed,roomList,doorList,doorListlink,doorWallList)
     
     
     
