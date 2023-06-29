@@ -1,8 +1,9 @@
 import random
 import time
+from PIL import Image, ImageDraw
 
-GRID_W = 35
-GRID_H = 25
+GRID_W = 50
+GRID_H = 50
 
 HORIZON  = 1
 VERTICAL = 2
@@ -60,7 +61,7 @@ def printGrille(grille):
             elif(val == WALL):
                 print("2",end="  ")
             elif(val == CORRIDOR):
-                print("*",end="  ")
+                print(".",end="  ")
             elif(val == DOOR):
                 print("p",end="  ")
             elif(val == CORNER):
@@ -95,9 +96,7 @@ def createRooms(grid, roomList, nbRoom, minS, maxS):
                     isVoid = isVoid and grid[i][j]==VOID
             stop = isVoid
             # stop = (grid[x][y] == VOID and grid[x+w-1][y] == VOID and grid[x][y+h-1] == VOID and grid[x+w-1][y+h-1] == VOID)
-            loop+=1
-            if loop > 100:
-                print("AAAAAAHHHHHHH")
+
         room = Room(w,h,x,y,id)
         roomList.append(room)
         for i in range (x-1,x+w+1):
@@ -434,16 +433,13 @@ def corridor(sx,sy,dir,tx,ty,grid):
                     elemGrid[nx][ny].py = current.y
                     elemGrid[nx][ny].visited = True
                     toSee.append(elemGrid[nx][ny])
-        if occ > 1000:
-            print("peut etre la")
+
         # print("2.003",occ)
     # print(elemGrid[tx][ty].parentId,occ,occ2)
-    print("2.004",occ)
     road = []
     nx = elemGrid[tx][ty].px
     ny = elemGrid[tx][ty].py
     road.append((nx,ny))
-    print("2.005",occ)
     loop = 0
     while not(elemGrid[nx][ny].px == sx and elemGrid[nx][ny].py == sy):
         road.append((elemGrid[nx][ny].px,elemGrid[nx][ny].py))
@@ -452,7 +448,6 @@ def corridor(sx,sy,dir,tx,ty,grid):
         nx = a
         loop +=1
         if loop>1000:
-            print("oui")
             return None
 
     
@@ -474,9 +469,7 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
     while len(doorList) > 1:
         door0 = doorList.pop(0)
 
-        print("1")
         stop = False
-        loop2=0
         while not stop:#verifie que les deux porte soit d'une salle differente
             index = random.randint(0,len(doorList)+len(doorListLinked)-1)
             if(index>=len(doorList)):
@@ -484,12 +477,6 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
             else:
                 value = doorList[index].idParent
             stop = value != door0.idParent
-            loop2+=1
-            if loop2>100:
-                print("ici")
-            
-            # print("la")
-        print("2")
         if(index>=len(doorList)):
             door1 = doorListLinked.pop(index-len(doorList))
         else:
@@ -498,13 +485,11 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
         if (door0.id == door1.id or (door0.x == door1.x and door0.y == door1.y)):
             doorList.append(door0)
         else:
-            print("2.01")
             # print("ids :",door0.id,door1.id)
             # print("Pids :",door0.idParent,door1.idParent)
             road = corridor(door0.x,door0.y,door0.alignement,door1.x,door1.y,grid)
             if road == None:
                 return 1
-            print("2.02")
             door0.link.append(door1.id)
             door1.link.append(door0.id)
             doorListLinked.append(door0)
@@ -512,11 +497,6 @@ def buildCorridors(rawGrid,doorList,doorListLinked):
             for coor in road:
                 # print(coor[0],coor[1])
                 rawGrid[coor[0]][coor[1]] = CORRIDOR 
-        loop+=1
-        if loop >2000:
-            print("laaaaaaaaaa")
-        print("2.2")
-    print("3")
     if len(doorList) == 1:
         door0 = doorList.pop(0)
         i = random.randint(0,len(doorListLinked)-1)
@@ -655,6 +635,35 @@ def writeLog(seed,roomList,doorList,doorListlink,doorWallList):
         # self.idParent = idParent
         # self.alignement = alignement
         # self.link = []
+def closeWall(grid):
+
+    for x in range(0,GRID_W):
+        for y in range (0,GRID_H):
+            if(grid[x][y]!=VOID and grid[x][y]!=WALL and grid[x][y]!=CORNER):
+                for shiftx in range (x-1,x+2):
+                    for shifty in range (y-1,y+2):
+                        if(shiftx>=0 and shiftx<GRID_W and shifty>=0 and shifty<GRID_H and grid[shiftx][shifty] == VOID):
+                            grid[shiftx][shifty] = WALL
+
+def drawImg(grid):
+
+    image = Image.new('RGB', (GRID_W, GRID_H), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    for x in range(0,GRID_W):
+        for y in range (0,GRID_H):
+            color = (255,255,255)
+            if grid[x][y] == WALL or grid[x][y] == CORNER:
+                color = (51,51,51)
+            elif grid[x][y] == ROOM:
+                color = (255,133,51)
+            elif grid[x][y] == CORRIDOR:
+                color = (255,255,102)   
+            elif grid[x][y] == DOOR:
+                color = (102,51,0)
+            draw.point((x, y), color)
+    image.save("donjon.png")
+            
+
 
 if __name__ == '__main__':
     random.seed()
@@ -670,9 +679,9 @@ if __name__ == '__main__':
         for y in range (0,GRID_H):
             renduFinal[x][y] = 0
     print("inited grid")
-    createRooms(renduFinal,roomList,9,2,6)
+    createRooms(renduFinal,roomList,random.randint(8,13),5,8)
     print("created rooms")
-    createDoors(renduFinal,roomList,doorList,1,3)
+    createDoors(renduFinal,roomList,doorList,1,2)
     print("created door")
     if cleanDoorWall(renduFinal,doorList,doorWallList,roomList) != 0:
         print("error 0 ")
@@ -702,8 +711,9 @@ if __name__ == '__main__':
     print("checked block")
     # print("roomList:",end="")
     # printIdList(roomList)
-    
-    printGrille(renduFinal)
-    
+    closeWall(renduFinal)
+    print("closed Wall")
+    # printGrille(renduFinal)
+    drawImg(renduFinal)
     
     
