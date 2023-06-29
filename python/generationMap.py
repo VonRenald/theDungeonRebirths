@@ -662,7 +662,26 @@ def drawImg(grid):
                 color = (102,51,0)
             draw.point((x, y), color)
     image.save("donjon.png")
-            
+
+def drawImgxX(grid,r):
+
+    image = Image.new('RGB', (GRID_W*r, GRID_H*r), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    for x in range(0,GRID_W):
+        for y in range (0,GRID_H):
+            color = (255,255,255)
+            if grid[x][y] == WALL or grid[x][y] == CORNER:
+                color = (51,51,51)
+            elif grid[x][y] == ROOM:
+                color = (255,133,51)
+            elif grid[x][y] == CORRIDOR:
+                color = (255,255,102)   
+            elif grid[x][y] == DOOR:
+                color = (102,51,0)
+            for dx in range(0,r):
+                for dy in range (0,r):
+                    draw.point((x*r+dx, y*r+dy), color)
+    image.save("donjonX.png")
 
 
 if __name__ == '__main__':
@@ -715,5 +734,6 @@ if __name__ == '__main__':
     print("closed Wall")
     # printGrille(renduFinal)
     drawImg(renduFinal)
+    drawImgxX(renduFinal,10)
     
     
