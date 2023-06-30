@@ -18,20 +18,22 @@ int GRID_H = 20;
 
 struct s_door
 {
-    s_door(int x_=0, int y_=0, Room* parent_=nullptr)
+    s_door(int x_=0, int y_=0,Dir dir_=HORI, Room* parent_=nullptr)
     {
-        init(x_,y_,parent_);
+        init(x_,y_,dir_,parent_);
     }
 
-    void init(int x_=0, int y_=0, Room* parent_=nullptr)
+    void init(int x_=0, int y_=0, Dir dir_=HORI, Room* parent_=nullptr)
     {
         x = x_;
         y = y_;
+        dir=dir_;
         parent = parent_;
         id = reinterpret_cast<uint64_t>(this);
     }
     int x,y;
     list<Door*> link;
+    Dir dir;
     Room* parent;
     uint64_t id;
 };
@@ -103,7 +105,7 @@ Case* initGrid()
     }
     return grid;
 }
-int creatRooms(Case* grid, list<Room*> *rooms, int nbRoom, int minSize, int maxSize)
+int createRooms(Case* grid, list<Room*> *rooms, int nbRoom, int minSize, int maxSize)
 {
     // autant de boucle que de salle voulu
     for(int e=0; e<nbRoom; e++){
@@ -157,30 +159,49 @@ int creatRooms(Case* grid, list<Room*> *rooms, int nbRoom, int minSize, int maxS
 
     return 0;
 }
-int creatRooms(Case* grid, list<Room*> *rooms, list<Door*> *doors, int nbDoor)
+int createDoors(Case* grid, list<Room*> rooms, list<Door*> *doors, int nbDoor)
 {
     for(Room* room : rooms)
     {
         for(int i=0;i<nbDoor;i++)
         {
+            int x,y = 0;
+            Dir dir;
             for(bool stop=false; !stop;)
             {
                 int cote = randint(1,4);//defini sur quel mur va etre la porte
-                int x,y = 0;
-                Dir dir;
+                x,y = 0;
                 switch (cote)
                 {
                 case 1:
                     x = room->x-1;
-                    y = randint(room->y,room->y+room.h-2)
+                    y = randint(room->y,room->y+room->h-2);
                     dir = HORI;
                     break;
                 case 2:
-                    
+                    x = randint(room->x,room->x+room->w-2);
+                    y = room->y-1;
+                    dir = VERT;
+                    break;
+                case 3:
+                    x = room->x+room->w;
+                    y = randint(room->y,room->y+room->h-2);
+                    dir = HORI;
+                    break;
+                case 4:
+                    x = randint(room->x,room->x+room->w-2);
+                    y = room->y+room->h;
+                    dir = VERT;
+                    break;
                 default:
                     break;
                 }
+                stop = grid[m(x,y)] != DOOR && grid[m(x,y)] != CORNER;
             }
+            grid[m(x,y)] = DOOR;
+            Door*door = (Door*) malloc(sizeof(Door));
+            door->init(x,y,dir,room);
+            doors->push_back(door);
         }
     }
     return 0;
@@ -192,7 +213,8 @@ int main()
     list<Room*> rooms;
     list<Door*> doors;
 
-    creatRooms(grid,&rooms,3,2,5);
+    createRooms(grid,&rooms,3,2,5);
+    createDoors(grid, rooms, &doors, randint(1,3));
     
     printGrid(grid);
     free(grid);
