@@ -347,6 +347,7 @@ def cleanDoorWall(grid, doorList, doorWallList, roomList):
                 # print("CAS 6.0")
         if not toRemove:
             doorList.append(door)
+            #maxa++
         i+=1
     for elem in doorWallList:
         for i in range (0,doorList.count(elem)):
