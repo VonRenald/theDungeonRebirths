@@ -13,3 +13,8 @@ C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\obj\Debug\net7.0\refint\
 C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\obj\Debug\net7.0\csharp.pdb
 C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\obj\Debug\net7.0\csharp.genruntimeconfig.cache
 C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\obj\Debug\net7.0\ref\csharp.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\System.Drawing.Common.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\runtimes\win\lib\net7.0\System.Drawing.Common.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\obj\Debug\net7.0\csharp.csproj.CopyComplete

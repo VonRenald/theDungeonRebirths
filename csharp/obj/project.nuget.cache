@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "HDBgJsQI6dwjgFTBhnnhpl7sGehpGenUreQUdSu7e2JNTQnnHNCye9CEjEndBV16x0iGsJ9eBbiGdi9yquVOnw==",
+  "dgSpecHash": "v6tXmiCv5udb8A4WlmYAqV7xx0uZtPnkO7sz0ZyMMX4v7hXCRCh2CxfuB7ClMOQ0nBA4dXVBr21L35XK7iMb8w==",
   "success": true,
   "projectFilePath": "C:\\Users\\Brice Weis\\Documents\\theDungeonRebirths\\csharp\\csharp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\microsoft.win32.systemevents\\7.0.0\\microsoft.win32.systemevents.7.0.0.nupkg.sha512",
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\system.drawing.common\\7.0.0\\system.drawing.common.7.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

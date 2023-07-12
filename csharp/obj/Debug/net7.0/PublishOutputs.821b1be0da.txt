@@ -1,0 +1,9 @@
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\csharp.exe
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\csharp.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\csharp.deps.json
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\csharp.runtimeconfig.json
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\csharp.pdb
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\Microsoft.Win32.SystemEvents.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\System.Drawing.Common.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\runtimes\win\lib\net7.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\bin\Debug\net7.0\publish\runtimes\win\lib\net7.0\System.Drawing.Common.dll

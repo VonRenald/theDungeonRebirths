@@ -7,14 +7,19 @@ namespace GenerationMap
     {
         static int Main(string[] args)
         {
-            // Console.WriteLine("Hello, World!");
-            // Console.WriteLine("test {0} {1}",324,"ono");
             Random random = new Random();
-            GenerationMap gm = new GenerationMap(20,20,random.Next(3,5+1),2,5,1,3);
-            gm.printGrid();
+            for(int i=0; i<5;i++){
 
-
-            Console.Read();
+            
+                GenerationMap gm = new GenerationMap(50,50,random.Next(5,7+1),5,10,1,3);
+                // GenerationMap gm = new GenerationMap(20,20,4,2,3,1,1);
+                // gm.printGrid();
+                string str = "img";
+                str += i.ToString() + ".png";
+                Console.WriteLine(str);
+                gm.createPng(str,10);
+            }
+            // Console.Read();
             return 0;
         }
     }
