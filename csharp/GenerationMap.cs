@@ -318,6 +318,7 @@ namespace GenerationMap
                         case 1:
                             x = rooms[i].x-1;
                             y = randint(rooms[i].y,rooms[i].y+rooms[i].h-2);
+                            dir = Dir.HORI;
                             break;
                         case 2:
                             x = randint(rooms[i].x,rooms[i].x+rooms[i].w-2);
@@ -346,14 +347,16 @@ namespace GenerationMap
         }
         private int cleanDoorWall()
         {
-            for(int i=0, max=doors.Count; i<max;i++)
+            int maxa=doors.Count;
+            for(int i=0; i<maxa;i++)
             {
-                Door door = doors[0];
-                doors.RemoveAt(0);
+                
+                Door door = doors[0];doors.RemoveAt(0);
                 Door nDoor;
                 bool toRemove = false;
                 if(door.dir == Dir.HORI)
                 {
+                    Console.WriteLine("??");
                     if(door.x-1>0){
                         if(grid[door.x-1,door.y] == Case.WALL){//Si gauche porte mur
                             grid[door.x-1,door.y] = Case.DOOR;
@@ -366,21 +369,24 @@ namespace GenerationMap
                             toRemove = true;
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
+                            Console.WriteLine("Case 1.0 LW");
                         }else if(grid[door.x-1,door.y] == Case.CORNER){
                             if(grid[door.x,door.y+1] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.y+=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             }else if(grid[door.x,door.y-1] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.y-=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             } else
                                 toRemove = true;
+                            toRemove = true;
+                            Console.WriteLine("Case 1.1 LC");
                         }else if(grid[door.x-1,door.y] == Case.DOOR){
                             nDoor = popDoorByCoor(door.x-1,door.y);
                             if(nDoor.Equals(nullDoor)) return 1;
@@ -389,9 +395,10 @@ namespace GenerationMap
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
                             toRemove=true;
+                            Console.WriteLine("Case 1.2 LD");
                         }
                         
-                    }else if (door.x+1 < GRID_W){//Si droite porte mur 
+                    }if (door.x+1 < GRID_W){//Si droite porte mur 
                         if (grid[door.x+1,door.y]==Case.WALL){
                             grid[door.x+1,door.y] = Case.DOOR;
                             Room parent = getRoomByCoor(door.x+1,door.y);
@@ -402,23 +409,24 @@ namespace GenerationMap
                             toRemove = true;
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
-                            // # print("CAS 2.0")
+                            Console.WriteLine("Case 2.0 RW");
                         }else if(grid[door.x+1,door.y]==Case.CORNER){
                             if(grid[door.x,door.y-1] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.y-=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             }else if(grid[door.x,door.y+1] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.y+=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             }else
                                 toRemove = true;
-                            // # print("CAS 2.1")
+                            toRemove = true;
+                            Console.WriteLine("Case 2.1 RC");
                         }else if(grid[door.x+1,door.y] == Case.DOOR){
                             nDoor = popDoorByCoor(door.x+1,door.y);
                             if(nDoor.Equals(nullDoor)) return 1;
@@ -427,9 +435,10 @@ namespace GenerationMap
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
                             toRemove=true;
+                            Console.WriteLine("Case 2.2 RD");
                         }
 
-                    }else if (  door.x-1 >= 0 && 
+                    }if (  door.x-1 >= 0 && 
                                 door.x+1 < GRID_W && 
                                 grid[door.x-1,door.y]==Case.ROOM && 
                                 grid[door.x+1,door.y]==Case.ROOM){// si porte traversse deux mur
@@ -441,10 +450,10 @@ namespace GenerationMap
                         toRemove = true;
                         doorsWall.Add(door);
                         doorsWall.Add(nDoor);
-                        // # print("CAS 3.0")
+                        Console.WriteLine("Case 3.0 RHR");
                     }
-                }
-                if (door.dir == Dir.VERT){
+                }else{
+                    Console.WriteLine("**");
                     if(door.y-1>0){//#Si haut porte mur
                         if(grid[door.x,door.y-1] == Case.WALL){
                             grid[door.x,door.y-1] = Case.DOOR;
@@ -456,23 +465,24 @@ namespace GenerationMap
                             toRemove = true;
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
-                            // # print("CAS 4.0")
+                            Console.WriteLine("Case 4.0 UW");
                         }else if(grid[door.x,door.y-1] == Case.CORNER){
                             if(grid[door.x+1,door.y] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.x+=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             }else if(grid[door.x-1,door.y] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.x-=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             } else
                                 toRemove=true;
-                            // # print("CAS 4.1")
+                            toRemove=true;
+                            Console.WriteLine("Case 4.1 UC");
                         } else if(grid[door.x,door.y-1] == Case.DOOR){
                             nDoor = popDoorByCoor(door.x,door.y-1);
                             if(nDoor.Equals(nullDoor))return 1;
@@ -481,9 +491,10 @@ namespace GenerationMap
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
                             toRemove=true;
+                            Console.WriteLine("Case 4.2 UD");
                         }
 
-                    }else if (door.y+1<GRID_H){//#Si droite porte mur
+                    }if (door.y+1<GRID_H){//#Si droite porte mur
                         if(grid[door.x,door.y+1]==Case.WALL){
                             grid[door.x,door.y+1] = Case.DOOR;
                             Room parent = getRoomByCoor(door.x,door.y+1);
@@ -494,23 +505,24 @@ namespace GenerationMap
                             toRemove = true;
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
-                            // # print("CAS 5.0")
+                            Console.WriteLine("Case 5.0 DW");
                         } else if(grid[door.x,door.y+1]==Case.CORNER){
                             if(grid[door.x+1,door.y] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.x+=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             }else if(grid[door.x-1,door.y] == Case.WALL){
                                 grid[door.x,door.y]=Case.WALL;
                                 door.x-=1;
                                 grid[door.x,door.y]=Case.DOOR;
                                 doors.Insert(0,door);
-                                max++;
+                                maxa++;
                             }else
                                 toRemove=true;
-                            // # print("CAS 5.1")
+                            toRemove=true; 
+                            Console.WriteLine("Case 5.2 DC");
                             
                         }else if(grid[door.x,door.y+1] == Case.DOOR){
                             nDoor = popDoorByCoor(door.x,door.y+1);
@@ -520,8 +532,9 @@ namespace GenerationMap
                             doorsWall.Add(door);
                             doorsWall.Add(nDoor);
                             toRemove=true;
+                            Console.WriteLine("Case 5.3 DD");
                         }
-                    }else if (door.y-1 >= 0 && 
+                    }if (door.y-1 >= 0 && 
                             door.y+1 < GRID_H && 
                             grid[door.x,door.y-1]==Case.ROOM && 
                             grid[door.x,door.y+1]==Case.ROOM){//# si porte traversse deux mur
@@ -533,10 +546,11 @@ namespace GenerationMap
                         toRemove = true;
                         doorsWall.Add(door);
                         doorsWall.Add(nDoor);
+                        Console.WriteLine("Case 6.0 RVR");
                     }
-                    if(!toRemove){
-                        doors.Add(door);
-                    }
+                }
+                if(!toRemove){
+                    doors.Add(door);
                 }
             }
             foreach(Door door in doorsWall)
@@ -545,7 +559,6 @@ namespace GenerationMap
             }
             return 0;
         }
-        
         private int buildCorridors()
         {
             if(doors.Count == 1)
@@ -575,7 +588,7 @@ namespace GenerationMap
                     
                     if(index >= doors.Count){
                         door2link = doorsLinked[index-doors.Count];
-                        doorsLinked.RemoveAt(index);
+                        doorsLinked.RemoveAt(index-doors.Count);
                     }else{
                         door2link = doors[index];
                         doors.RemoveAt(index);
@@ -587,8 +600,9 @@ namespace GenerationMap
                 else
                 {
                     List<Elem> road = corridor(door.x,door.y,door.dir,door2link.x,door2link.y,grid4path);
-                    if (road.Count == 0)
-                        return 1;
+                    if (road.Count == 0){
+                        Console.WriteLine("start {0} {1} target {2} {3}",door.x,door.y,door2link.x,door2link.y);
+                        return 1;}
                     door.link.Add(door2link);
                     door2link.link.Add(door);
                     doorsLinked.Add(door);
@@ -644,22 +658,23 @@ namespace GenerationMap
             {
                 Console.WriteLine("ERROR CREATE DOORS");
             }
+            printGrid();
             Console.WriteLine("len doors {0}",doors.Count);
-            // switch(cleanDoorWall()) {
-            //     case 1:
-            //         Console.WriteLine("ERROR CLEAN NULL DOOR");
-            //         break;
-            //     case 2:
-            //         Console.WriteLine("ERROR CLEAN NULL ROOM");
-            //         break;
-            // }
-            // printGrid();
-            // Console.WriteLine("len doors {0}",doors.Count);
-            // if(buildCorridors()!=0)
-            // {
-            //     Console.WriteLine("ERROR CREATE CORRIDORS");
-            // }
-            // Console.WriteLine("len doors {0}",doors.Count);
+            switch(cleanDoorWall()) {
+                case 1:
+                    Console.WriteLine("ERROR CLEAN NULL DOOR DD");
+                    break;
+                case 2:
+                    Console.WriteLine("ERROR CLEAN NULL ROOM RxR");
+                    break;
+            }
+            
+            Console.WriteLine("len doors {0}",doors.Count);
+            if(buildCorridors()!=0)
+            {
+                Console.WriteLine("ERROR CREATE CORRIDORS");
+            }
+            Console.WriteLine("len doors {0}",doors.Count);
         }
     };
 }
