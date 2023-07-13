@@ -57,7 +57,6 @@ namespace GenerationMap
                 link = new List<Door>();
             }
         }
-
         public class Elem
         {
             public int x,y,p;
@@ -236,6 +235,118 @@ namespace GenerationMap
                     loop +=1;
                     if (loop>1000)
                         return new List<Elem>();
+                }
+            }
+
+            
+            
+            grid[sx,sy] = -1;
+            grid[tx,ty] = -1;
+
+            return road;
+        }
+
+        private List<Elem> corridorV2(int sx, int sy, Dir dir, int tx, int ty, int[,] grid)
+        {
+            Elem[,] elemGrid = new Elem[GRID_W,GRID_H];
+            for(int x=0;x<GRID_W;x++){
+                for(int y=0;y<GRID_H;y++){
+                    elemGrid[x,y] = new Elem(x,y);
+                }
+            }
+            grid[sx,sy] = 0;
+            grid[tx,ty] = 0;
+            elemGrid[sx,sy].visited=true;
+            elemGrid[sx,sy].dir = dir;
+            List<Elem> toSee = new List<Elem>();
+            toSee.Add(elemGrid[sx,sy]);
+
+            int [] driftX = {0, 1, 0,-1};
+            int [] driftY = {-1, 0, 1, 0};
+            int occ = 0;
+            int occ2 = 0;
+            int nx = 0;
+            int ny =0;
+            List<Elem> road = new List<Elem>(); 
+
+            while(toSee.Count > 0)
+            {
+                occ +=1;
+                Elem current = toSee[0];toSee.RemoveAt(0);
+                for(int i=0; i<4; i++)
+                {
+                    nx = current.x+driftX[i];
+                    ny = current.y+driftY[i];
+                    if (nx >= 0 && nx < GRID_W
+                        && ny >= 0 && ny<GRID_H 
+                        && grid[nx,ny] == 0)//si coordonée valide
+                    {
+                        occ2 +=1;
+                        if(elemGrid[nx,ny].visited)//si voisin visité
+                        {
+                            if(current.dir == Dir.HORI && driftY[i] == 0 || current.dir == Dir.VERT && driftX[i] == 0){ // pas de changment de direction
+                                int costRoad = 1;
+                                if (this.grid[nx,ny] != Case.CORRIDOR)
+                                    costRoad = 2;
+                                if(elemGrid[nx,ny].p > current.p+costRoad)// nouveau chemin plus interesant
+                                {
+                                    elemGrid[nx,ny].p = current.p+costRoad;
+                                    elemGrid[nx,ny].parent = current;
+                                    elemGrid[nx,ny].dir = current.dir;
+                                    toSee.Add(elemGrid[nx,ny]);
+                                }
+                            }else {
+                                int costRoad = 1;
+                                if (this.grid[nx,ny] != Case.CORRIDOR)
+                                    costRoad = 4;
+                                if(elemGrid[nx,ny].p > current.p+costRoad)// nouveau chemin plus interesant
+                                {
+                                    
+                                    elemGrid[nx,ny].p = current.p+costRoad;
+                                    elemGrid[nx,ny].parent = current;
+                                    elemGrid[nx,ny].dir = changerDir(current.dir);
+                                    toSee.Add(elemGrid[nx,ny]);
+                                    
+                                }
+                            }
+                        }else{//} voisin non visité
+                            if(current.dir == Dir.HORI && driftY[i] == 0 || current.dir == Dir.VERT && driftX[i] == 0)// pas de changment de direction
+                            {
+                                int costRoad = 1;
+                                if (this.grid[nx,ny] != Case.CORRIDOR)
+                                    costRoad = 2;
+                                elemGrid[nx,ny].p = current.p+costRoad;
+                                elemGrid[nx,ny].dir = current.dir;
+                            }else{
+                                int costRoad = 1;
+                                if (this.grid[nx,ny] != Case.CORRIDOR)
+                                    costRoad = 4;
+                                elemGrid[nx,ny].p = current.p+costRoad;
+                                elemGrid[nx,ny].dir = changerDir(current.dir);
+                            }
+                            elemGrid[nx,ny].parent= current;
+                            elemGrid[nx,ny].visited = true;
+                            toSee.Add(elemGrid[nx,ny]);
+                        }
+                    }
+                }
+            }
+            if(elemGrid[tx,ty].parent != null){
+                road.Add((Elem)elemGrid[tx,ty].parent);
+                nx = elemGrid[tx,ty].parent.x;
+                ny = elemGrid[tx,ty].parent.y;
+                int loop = 0;
+                // Console.WriteLine("coor {0} {1} start {2} {3} target {4} {5}",nx,ny,sx,sy,tx,ty);
+                while (!(elemGrid[nx,ny].parent.x == sx && elemGrid[nx,ny].parent.y == sy))
+                {
+                    road.Add(elemGrid[nx,ny].parent);
+                    int a = elemGrid[nx,ny].parent.x;
+                    ny = elemGrid[nx,ny].parent.y;
+                    nx = a;
+                    loop +=1;
+                    if (loop>1000 || elemGrid[nx,ny].parent == null)
+                        return new List<Elem>();
+
                 }
             }
 
@@ -606,7 +717,7 @@ namespace GenerationMap
                     doors.Add(door);
                 else
                 {
-                    List<Elem> road = corridor(door.x,door.y,door.dir,door2link.x,door2link.y,grid4path);
+                    List<Elem> road = corridorV2(door.x,door.y,door.dir,door2link.x,door2link.y,grid4path);
                     if (road.Count == 0){
                         // Console.WriteLine("start {0} {1} target {2} {3}",door.x,door.y,door2link.x,door2link.y);
                         return 1;}
@@ -625,7 +736,7 @@ namespace GenerationMap
             {
                 Door door = doors[0];doors.RemoveAt(0);
                 int i = randint(0,doorsLinked.Count-1);
-                List<Elem> road = corridor(door.x,door.y,door.dir,doorsLinked[i].x,doorsLinked[i].y,grid4path);
+                List<Elem> road = corridorV2(door.x,door.y,door.dir,doorsLinked[i].x,doorsLinked[i].y,grid4path);
                 if (road.Count == 0)
                     return 1;
                 doorsLinked[i].link.Add(door);
@@ -638,6 +749,8 @@ namespace GenerationMap
             return 0;
         }
         private int blockUnique(){
+            if(doorsLinked.Count == 0)
+                return 3;
             Door startDoor = doorsLinked[randint(0,doorsLinked.Count-1)];doorsLinked.Remove(startDoor);
             List<Room> roomAcces = new List<Room>(); roomAcces.Add(startDoor.room);
             List<Door> doorSee = new List<Door>(); doorSee.Add(startDoor);
@@ -676,7 +789,7 @@ namespace GenerationMap
                             else
                                 grid4path[x,y] = -1;
                     }   }
-                    List<Elem> road = corridor(startDoor.x,startDoor.y,startDoor.dir,door2link.x,door2link.y,grid4path);
+                    List<Elem> road = corridorV2(startDoor.x,startDoor.y,startDoor.dir,door2link.x,door2link.y,grid4path);
                     if (road.Count == 0){
                         // Console.WriteLine("start {0} {1} target {2} {3}",startDoor.x,startDoor.y,door2link.x,door2link.y);
                         return 2;}
@@ -711,7 +824,6 @@ namespace GenerationMap
             }
             return 0;
         }
-
         public void createPng(string name, int ratio){
             Bitmap bmp = new Bitmap(GRID_W*ratio,GRID_H*ratio);
             // Graphics g = Graphics.FromImage(bmp);
@@ -758,60 +870,74 @@ namespace GenerationMap
         }
         public GenerationMap(int GRID_W_, int GRID_H_, int nbRoom, int minSizeRoom, int maxSizeRoom, int minNbDoor, int maxNbDoor)
         {
-            
-            GRID_W = GRID_W_;
-            GRID_H = GRID_H_;
+            bool stop = false;
+            while(!stop){
+                stop = true;
+                GRID_W = GRID_W_;
+                GRID_H = GRID_H_;
 
-            nullRoom = new Room(GRID_W,GRID_H,0,0);
-            nullDoor = new Door(GRID_W,GRID_H,Dir.HORI,nullRoom);
+                nullRoom = new Room(GRID_W,GRID_H,0,0);
+                nullDoor = new Door(GRID_W,GRID_H,Dir.HORI,nullRoom);
 
-            rooms = new List<Room>();
-            doors = new List<Door>();
-            doorsWall = new List<Door>();
-            doorsLinked = new List<Door>();
-            grid = new Case[GRID_W,GRID_H];
-            for(int x=0;x<GRID_W;x++){
-                for(int y=0;y<GRID_H;y++){
-                    grid[x,y] = Case.VOID;
+                rooms = new List<Room>();
+                doors = new List<Door>();
+                doorsWall = new List<Door>();
+                doorsLinked = new List<Door>();
+                grid = new Case[GRID_W,GRID_H];
+                for(int x=0;x<GRID_W;x++){
+                    for(int y=0;y<GRID_H;y++){
+                        grid[x,y] = Case.VOID;
+                    }
                 }
+                if(createRooms(nbRoom, minSizeRoom, maxSizeRoom)!=0)
+                {
+                    Console.WriteLine("ERROR CREATE ROOMS");
+                    stop = false;
+                }
+                if(createDoors(randint(minNbDoor,maxNbDoor))!=0)
+                {
+                    Console.WriteLine("ERROR CREATE DOORS");
+                    stop = false;
+                }
+                // printGrid();
+                // Console.WriteLine("len doors {0}",doors.Count);
+                switch(cleanDoorWall()) {
+                    case 1:
+                        Console.WriteLine("ERROR CLEAN NULL DOOR DD");
+                        stop = false;
+                        break;
+                    case 2:
+                        Console.WriteLine("ERROR CLEAN NULL ROOM RxR");
+                        stop = false;
+                        break;
+                }
+                
+                // Console.WriteLine("len doors {0}",doors.Count);
+                if(buildCorridors()!=0)
+                {
+                    Console.WriteLine("ERROR CREATE CORRIDORS");
+                    stop = false;
+                }
+                // Console.WriteLine("len doors {0}",doors.Count);
+                
+                // Console.WriteLine("len doorsLinked {0}",doorsLinked.Count);
+                switch(blockUnique())
+                {
+                    case 1:
+                        Console.WriteLine("ERROR UNIFICATE BLOCK INFINIT LOOP");
+                        stop = false;
+                        break;
+                    case 2:
+                        Console.WriteLine("ERROR UNIFICATE BLOCK ERROR ROAD");
+                        stop = false;
+                        break;
+                    case 3:
+                        Console.WriteLine("ERROR UNIFICATE BLOCK LINKED LIST EMPTY");
+                        stop = false;
+                        break;
+                }
+                closeWall();
             }
-            if(createRooms(nbRoom, minSizeRoom, maxSizeRoom)!=0)
-            {
-                Console.WriteLine("ERROR CREATE ROOMS");
-            }
-            if(createDoors(randint(minNbDoor,maxNbDoor))!=0)
-            {
-                Console.WriteLine("ERROR CREATE DOORS");
-            }
-            // printGrid();
-            // Console.WriteLine("len doors {0}",doors.Count);
-            switch(cleanDoorWall()) {
-                case 1:
-                    Console.WriteLine("ERROR CLEAN NULL DOOR DD");
-                    break;
-                case 2:
-                    Console.WriteLine("ERROR CLEAN NULL ROOM RxR");
-                    break;
-            }
-            
-            // Console.WriteLine("len doors {0}",doors.Count);
-            if(buildCorridors()!=0)
-            {
-                Console.WriteLine("ERROR CREATE CORRIDORS");
-            }
-            // Console.WriteLine("len doors {0}",doors.Count);
-            
-            // Console.WriteLine("len doorsLinked {0}",doorsLinked.Count);
-            switch(blockUnique())
-            {
-                case 1:
-                    Console.WriteLine("ERROR UNIFICATE BLOCK INFINIT LOOP");
-                    break;
-                case 2:
-                    Console.WriteLine("ERROR UNIFICATE BLOCK ERROR ROAD");
-                    break;
-            }
-            closeWall();
         }
     };
 }
