@@ -3,24 +3,22 @@ using System.Drawing;
 
 namespace GenerationMap
 {
-    enum Case {
-        VOID, ROOM, CORRIDOR, WALL, CORNER, DOOR
-    };
+    
     enum Dir {
         HORI,VERT
-    };
+    };  
 
-    
+      
     class GenerationMap
     {
         public int GRID_W = 20;
         public int GRID_H = 20;
         public Case[,] grid;
+        public Case[,] grid2;
         private List<Room> rooms;
         private List<Door> doors;
         private List<Door> doorsWall;
         private List<Door> doorsLinked;
-
         private Room nullRoom;
         private Door nullDoor;
         
@@ -28,7 +26,7 @@ namespace GenerationMap
         {
             return (new Random()).Next(min,max+1);
         }
-        
+
         private class Room
         {
             public int x,y,w,h;
@@ -104,7 +102,7 @@ namespace GenerationMap
                         Console.Write("{0}   ","2");
                     }else if (val == Case.CORRIDOR){
                         Console.Write("{0}   ","*");
-                    }else if (val == Case.DOOR){
+                    }else if (val == Case.DOOR || val == Case.DOOR_H || val == Case.DOOR_V){
                         Console.Write("{0}   ","p");
                     }else if (val == Case.CORNER){
                         Console.Write("{0}   ","4");
@@ -245,7 +243,6 @@ namespace GenerationMap
 
             return road;
         }
-
         private List<Elem> corridorV2(int sx, int sy, Dir dir, int tx, int ty, int[,] grid)
         {
             Elem[,] elemGrid = new Elem[GRID_W,GRID_H];
@@ -468,13 +465,14 @@ namespace GenerationMap
                 bool toRemove = false;
                 if(door.dir == Dir.HORI)
                 {
+                    grid[door.x,door.y] = Case.DOOR_H;
                     // Console.WriteLine("??");
                     if(door.x-1>0){
                         if(grid[door.x-1,door.y] == Case.WALL){//Si gauche porte mur
-                            grid[door.x-1,door.y] = Case.DOOR;
+                            grid[door.x-1,door.y] = Case.ROOM;
                             Room Parent = getRoomByCoor(door.x-1,door.y);
                             if(Parent.Equals(nullRoom)) return 2;
-                            nDoor = new Door(door.x-1,door.y,Dir.HORI,Parent);
+                            nDoor = new Door(door.x,door.y,Dir.HORI,Parent);
                             Parent.doors.Add(nDoor);
                             door.link.Add(nDoor);
                             nDoor.link.Add(door);
@@ -501,8 +499,11 @@ namespace GenerationMap
                             toRemove = true;
                             // Console.WriteLine("Case 1.1 LC");
                         }else if(grid[door.x-1,door.y] == Case.DOOR){
+                            // Console.WriteLine("0-Case 1.2 LD");
                             nDoor = popDoorByCoor(door.x-1,door.y);
                             if(nDoor.Equals(nullDoor)) return 1;
+                            grid[door.x,door.y] = Case.ROOM;
+                            door.x-=1;
                             nDoor.link.Add(door);
                             door.link.Add(nDoor);
                             doorsWall.Add(door);
@@ -513,10 +514,10 @@ namespace GenerationMap
                         
                     }if (door.x+1 < GRID_W){//Si droite porte mur 
                         if (grid[door.x+1,door.y]==Case.WALL){
-                            grid[door.x+1,door.y] = Case.DOOR;
+                            grid[door.x+1,door.y] = Case.ROOM;
                             Room parent = getRoomByCoor(door.x+1,door.y);
                             if(parent.Equals(nullRoom)) return 2;
-                            nDoor = new Door(door.x+1,door.y,Dir.HORI,parent);
+                            nDoor = new Door(door.x,door.y,Dir.HORI,parent);
                             parent.doors.Add(nDoor);
                             door.link.Add(nDoor);
                             nDoor.link.Add(door);
@@ -542,8 +543,11 @@ namespace GenerationMap
                             toRemove = true;
                             // Console.WriteLine("Case 2.1 RC");
                         }else if(grid[door.x+1,door.y] == Case.DOOR){
+                            // Console.WriteLine("0-Case 2.2 RD");
                             nDoor = popDoorByCoor(door.x+1,door.y);
                             if(nDoor.Equals(nullDoor)) return 1;
+                            grid[door.x,door.y] = Case.ROOM;
+                            door.x+=1;
                             nDoor.link.Add(door);
                             door.link.Add(nDoor);
                             doorsWall.Add(door);
@@ -568,13 +572,14 @@ namespace GenerationMap
                         // Console.WriteLine("Case 3.0 RHR");
                     }
                 }else{
+                    grid[door.x,door.y] = Case.DOOR_V;
                     // Console.WriteLine("**");
                     if(door.y-1>0){//#Si haut porte mur
                         if(grid[door.x,door.y-1] == Case.WALL){
-                            grid[door.x,door.y-1] = Case.DOOR;
+                            grid[door.x,door.y-1] = Case.ROOM;
                             Room parent = getRoomByCoor(door.x,door.y-1);
                             if(parent.Equals(nullRoom)) return 2;
-                            nDoor = new Door(door.x,door.y-1,Dir.VERT,parent);
+                            nDoor = new Door(door.x,door.y,Dir.VERT,parent);
                             parent.doors.Add(nDoor);
                             door.link.Add(nDoor);
                             nDoor.link.Add(door);
@@ -600,8 +605,11 @@ namespace GenerationMap
                             toRemove=true;
                             // Console.WriteLine("Case 4.1 UC");
                         } else if(grid[door.x,door.y-1] == Case.DOOR){
+                            // Console.WriteLine("0-Case 4.2 UD");
                             nDoor = popDoorByCoor(door.x,door.y-1);
                             if(nDoor.Equals(nullDoor))return 1;
+                            grid[door.x,door.y] = Case.ROOM;
+                            door.y-=1;
                             nDoor.link.Add(door);
                             door.link.Add(nDoor);
                             doorsWall.Add(door);
@@ -612,10 +620,10 @@ namespace GenerationMap
 
                     }if (door.y+1<GRID_H){//#Si droite porte mur
                         if(grid[door.x,door.y+1]==Case.WALL){
-                            grid[door.x,door.y+1] = Case.DOOR;
+                            grid[door.x,door.y+1] = Case.ROOM;
                             Room parent = getRoomByCoor(door.x,door.y+1);
                             if(parent.Equals(nullRoom)) return 2;
-                            nDoor = new Door(door.x,door.y+1,Dir.VERT,parent);
+                            nDoor = new Door(door.x,door.y,Dir.VERT,parent);
                             parent.doors.Add(nDoor);
                             door.link.Add(nDoor);
                             nDoor.link.Add(door);
@@ -642,8 +650,11 @@ namespace GenerationMap
                             // Console.WriteLine("Case 5.2 DC");
                             
                         }else if(grid[door.x,door.y+1] == Case.DOOR){
+                            // Console.WriteLine("0-Case 5.3 DD");
                             nDoor = popDoorByCoor(door.x,door.y+1);
                             if(nDoor.Equals(nullDoor)) return 1;
+                            grid[door.x,door.y] = Case.ROOM;
+                            door.y+=1;
                             nDoor.link.Add(door);
                             door.link.Add(nDoor);
                             doorsWall.Add(door);
@@ -864,9 +875,94 @@ namespace GenerationMap
             bmp.Save(name, System.Drawing.Imaging.ImageFormat.Png);
             bmp.Dispose();
         }
-
         public void createPng(string name){
             createPng(name,1);
+        }
+
+        public void createPngV2(string name, Case[,] myGrid, int ratio = 1){
+            Bitmap bmp = new Bitmap(GRID_W*ratio,GRID_H*ratio);
+            // Graphics g = Graphics.FromImage(bmp);
+            for(int x=0; x<GRID_W; x++){
+                for(int y=0; y<GRID_H; y++){
+                    Color color = new Color();
+                    
+                    // if (myGrid[x,y] == Case.WALL_UP || myGrid[x,y] == Case.WALL_DOWN || myGrid[x,y] == Case.WALL_RIGHT || myGrid[x,y] == Case.WALL_LEFT)
+                    // {
+                    //     //WALL
+                    //     color = Color.Blue;
+                    // }else if(myGrid[x,y] == Case.WALL_DOUBLE_H || myGrid[x,y] == Case.WALL_DOUBLE_V)
+                    // {
+                    //     //WALL DOUBLE
+                    //     color = Color.BlueViolet;
+                    // }else if(myGrid[x,y] == Case.CORNER_UP_RIGHT || myGrid[x,y] == Case.CORNER_UP_LEFT || myGrid[x,y] == Case.CORNER_DOWN_RIGHT || myGrid[x,y] == Case.CORNER_DOWN_LEFT){
+                    //     //CORNER out
+                    //     color = Color.Green;
+                    // }else if(myGrid[x,y] == Case.CORNER_IN_UP_RIGHT || myGrid[x,y] == Case.CORNER_IN_UP_LEFT || myGrid[x,y] == Case.CORNER_IN_DOWN_RIGHT || myGrid[x,y] == Case.CORNER_IN_DOWN_LEFT){
+                    //     //CORNER in
+                    //     color = Color.GreenYellow;
+                    // }else if(myGrid[x,y] == Case.CORNER_IN_MIDLE_UP|| myGrid[x,y] == Case.CORNER_IN_MIDLE_DOWN || myGrid[x,y] == Case.CORNER_IN_MIDLE_RIGHT || myGrid[x,y] == Case.CORNER_IN_MIDLE_LEFT || myGrid[x,y] == Case.CORNER_IN_MIDLE){
+                    //     //CORNER in midle
+                    //     color = Color.GreenYellow;
+                    // }else 
+                    if( myGrid[x,y] == Case.ROOM || myGrid[x,y] == Case.CORRIDOR){
+                        color = Color.White;
+                    }else if(myGrid[x,y] == Case.DOOR || myGrid[x,y] == Case.DOOR_H || myGrid[x,y] == Case.DOOR_V){
+                        color = Color.FromArgb(102,51,0);
+                    }else if(myGrid[x,y] == Case.NULL){
+                        color = Color.FromArgb(0,0,0);
+                    }else if(myGrid[x,y] == Case.ERROR){
+                        color = Color.Red;
+                    }else if(myGrid[x,y] != Case.VOID) {
+                        color = Color.Blue;
+                    }
+                    for(int dx=0; dx<ratio; dx++){
+                        for(int dy=0; dy<ratio; dy++){
+                            bmp.SetPixel(x*ratio+dx,y*ratio+dy,color);
+                        }
+                    }
+                    
+                }
+            }
+            bmp.Save(name, System.Drawing.Imaging.ImageFormat.Png);
+            bmp.Dispose();
+        }
+        public Case[,] chageCaseForTilte(){
+            Case[,] newGrid = new Case[GRID_W,GRID_H];
+            sortCaseList cases = new sortCaseList();
+            for(int x=0; x<GRID_W; x++){
+                for(int y=0; y<GRID_H; y++){
+                    Case up = (y>0)? grid[x,y-1]: Case.VOID;
+                    Case down = (y<GRID_H-1)? grid[x,y+1]: Case.VOID;
+                    Case left = (x>0)? grid[x-1,y]: Case.VOID;
+                    Case right = (x<GRID_W-1)? grid[x+1,y]: Case.VOID;
+                    Case upRight = (y>0 && x<GRID_W-1)? grid[x+1,y-1]: Case.VOID;
+                    Case upLeft = (y>0 && x>0)? grid[x-1,y-1]: Case.VOID;
+                    Case downRight = (y<GRID_H-1 && x<GRID_W-1)? grid[x+1,y+1]: Case.VOID;
+                    Case downLeft = (y<GRID_H-1 && x>0)? grid[x-1,y+1]: Case.VOID;
+
+                    List<sortCase> possible = new List<sortCase>();
+                    if (grid[x,y] == Case.WALL || grid[x,y] == Case.CORNER){
+                        foreach(sortCase elem in cases.listCase){
+                            if( elem.up.Contains(up) && elem.down.Contains(down) && elem.right.Contains(right) && elem.left.Contains(left) && 
+                                elem.upRight.Contains(upRight) && elem.upLeft.Contains(upLeft) && elem.downRight.Contains(downRight) && elem.DownLeft.Contains(downLeft))
+                                possible.Add(elem);
+                        }
+                        if (possible.Count == 0){
+                            newGrid[x,y] = Case.NULL;
+                        }
+                        else if (possible.Count > 1){
+                            newGrid[x,y] = Case.ERROR;
+                        } else {
+                            newGrid[x,y] = possible[0].myCase;
+                        }
+                    }else{
+                        newGrid[x,y] = grid[x,y];
+                    }
+                    
+                }
+            }
+            
+            return newGrid;
         }
         public GenerationMap(int GRID_W_, int GRID_H_, int nbRoom, int minSizeRoom, int maxSizeRoom, int minNbDoor, int maxNbDoor)
         {
@@ -938,6 +1034,7 @@ namespace GenerationMap
                 }
                 closeWall();
             }
+            grid2 = chageCaseForTilte();
         }
     };
 }
