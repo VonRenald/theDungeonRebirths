@@ -8,7 +8,7 @@ namespace GenerationMap
         static int Main(string[] args)
         {
             Random random = new Random();
-            for(int i=0; i<1;i++){
+            for(int i=0; i<3;i++){
 
             
                 GenerationMap gm = new GenerationMap(50,50,random.Next(15,30+1),3,5,1,2);

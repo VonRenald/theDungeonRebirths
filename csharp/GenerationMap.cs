@@ -1017,7 +1017,7 @@ namespace GenerationMap
                 // Console.WriteLine("len doors {0}",doors.Count);
                 
                 // Console.WriteLine("len doorsLinked {0}",doorsLinked.Count);
-                switch(blockUnique())
+                switch(blockUnique()) //ne marche pas
                 {
                     case 1:
                         Console.WriteLine("ERROR UNIFICATE BLOCK INFINIT LOOP");
