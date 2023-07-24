@@ -369,6 +369,18 @@ namespace GenerationMap
                             break;
                         }
                         stop = grid[x,y] != Case.DOOR && grid[x,y] != Case.CORNER;
+                        
+                        // regarde les voisin pour ne pas avoir une autre porte proche
+                        int[] driftX = {-1,0,1};
+                        int[] driftY = {-1,0,1};
+                        foreach(int dx in driftX){
+                            foreach(int dy in driftY){
+                                if(x+dx>=0 && x+dx<GRID_W && y+dy>=0 && y+dy<GRID_H){
+                                    stop = stop && grid[x+dx,y+dy] !=Case.DOOR;
+                                }
+                            }
+                        }
+
                     }
                     grid[x,y] = Case.DOOR;
                     Door door = new Door(x,y,dir,rooms[i]);
@@ -669,6 +681,14 @@ namespace GenerationMap
                     }
                 }
             }
+
+            //positionne les porte
+            foreach(Door door in doorsLinked){
+                grid[door.x,door.y] = (door.dir==Dir.HORI)? Case.DOOR_H: Case.DOOR_V;
+            }
+            foreach(Door door in doorsWall){
+                grid[door.x,door.y] = (door.dir==Dir.HORI)? Case.DOOR_H: Case.DOOR_V;
+            }
             return 0;
         }
         public void createPng(string name, int ratio=1){
@@ -843,24 +863,6 @@ namespace GenerationMap
                 // Console.WriteLine("len doors {0}",doors.Count);
                 
                 // Console.WriteLine("len doorsLinked {0}",doorsLinked.Count);
-                // switch(blockUnique()) //ne marche pas
-                // {
-                //     case 1:
-                //         Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK INFINIT LOOP");
-                //         createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
-                //         // stop = false;
-                //         break;
-                //     case 2:
-                //         Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK ERROR ROAD");
-                //         createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
-                //         // stop = false;
-                //         break;
-                //     case 3:
-                //         Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK LINKED LIST EMPTY");
-                //         createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
-                //         // stop = false;
-                //         break;
-                // }
                 switch(blockUniqueV2()){
                     case 1:
                         Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK 2 NO CONNECTION");
