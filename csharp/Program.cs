@@ -13,7 +13,7 @@ namespace GenerationMap
             
                 GenerationMap gm = new GenerationMap(50,50,random.Next(15,30+1),3,5,1,2,i);
                 // GenerationMap gm = new GenerationMap(50,50,i+2,3,5,1,2);
-                // GenerationMap gm = new GenerationMap(20,20,4,2,3,1,1);
+                // GenerationMap gm = new GenerationMap(20,20,4,2,3,1,1,i);
                 // gm.printGrid();
                 string str = "img";
                 str += i.ToString() + ".png";
@@ -22,8 +22,8 @@ namespace GenerationMap
 
                 MapTitles titles = new MapTitles();
                 // titles.createPngV2("img/title3"+str,gm.grid2,50,50,"tilte3x3.png",3);
-                // titles.createPngV2("img/title16"+str,gm.grid2,50,50,"tilte16x16.png",16);
-                gm.createPngV2("img/"+str,gm.grid2,1);
+                // titles.createPngV2("img/title16"+str,gm.grid2,20,20,"tilte16x16.png",16);
+                gm.createPngV2("img/"+str,gm.grid2,10);
             }
             // Console.Read();
             return 0;
