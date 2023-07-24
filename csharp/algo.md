@@ -165,3 +165,36 @@ corridorV2(start_coor_X, start_coor_Y, direction_Hori_Vert, arrivee_coor_X, arri
                     ajouter la route au point a voir
     faire la liste de la route en partant du point d'arrivee et en remontant au point de depart
 ```
+```
+blockUnique()
+    pop une porte au hazard dans la liste des portes liees
+    cree une liste des pieces accessible depuis la porte de depart avec comme primere elemment la piece de la porte de depart
+    cree une liste des portes vus avec la porte de depart comme element
+    cree une liste des portes a voir vide
+    FOR les portes de la piece lier a la porte de depart
+        ajoute la porte aux portes a voir
+    FOR les portes lier a la porte de depart
+        ajoute la porte aux portes a voir
+    TAN QUE liste des portes a voire n'est pas vide
+        pop la premier porte des portes a voir
+        Si la piece lier a la porte n'est pas dans la liste des piece accessible
+            ajouter la piece a la liste
+        FOR les portes de la piece lier a la porte de depart
+            ajoute la porte aux portes a voir
+        FOR les portes lier a la porte de depart
+            ajoute la porte aux portes a voir
+        ajoute la porte a la liste des porte vus
+    SI le nombre de piece accessible est inferieur au nombre de piece
+        pend deux piece non rellier
+        genere une grille pour un calcule de chemin
+        cree une route entre deux porte des deux pieces differente
+        relance blickUnique()
+```
+```
+closeWall()
+    FOR toute la grille
+        SI la case n'est ni du VOID, ni un mur, ni un coin
+            FOR ses cases voisine 
+                SI voisin est du VOID
+                    trasphorme la case en mur
+```

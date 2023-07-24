@@ -120,13 +120,20 @@ namespace GenerationMap
             {
                 if (!toNotCheck.Contains(rooms[i]))
                 {
-                    if ((x==rooms[i].x-1 || x==rooms[i].x+rooms[i].w) && (y>rooms[i].y-1 || y < rooms[i].y+rooms[i].h)){
+                    if(rooms[i].x<=0 || rooms[i].x >= GRID_W || rooms[i].y<=0 || rooms[i].y>=GRID_H)
+                        Console.WriteLine("Room data : X1{0} Y1{1} X2{2} Y2{3}",rooms[i].x-1,rooms[i].x+rooms[i].w,rooms[i].y-1,rooms[i].y+rooms[i].h);
+                    if(x>=rooms[i].x-1 && x<=rooms[i].x+rooms[i].w && y>=rooms[i].y-1 && y<=rooms[i].y+rooms[i].h)
                         return rooms[i];
-                    }else if((y==rooms[i].y-1 || y==rooms[i].y+rooms[i].h) && (x>rooms[i].x-1 || x<rooms[i].x+rooms[i].w)){
-                        return rooms[i];
-                    }
+                    // if ((x==rooms[i].x-1 || x==rooms[i].x+rooms[i].w) && (y>rooms[i].y-1 || y < rooms[i].y+rooms[i].h)){
+                    //     return rooms[i];
+                    // }else if((y==rooms[i].y-1 || y==rooms[i].y+rooms[i].h) && (x>rooms[i].x-1 || x<rooms[i].x+rooms[i].w)){
+                    //     return rooms[i];
+                    // }
                 }
             }
+            grid[x,y] = Case.ERROR;
+            Console.WriteLine("X{0} Y{1}",x,y);
+            Console.WriteLine("Room data : X{0} Y{1} W{2} H{3}",toNotCheck[0].x,toNotCheck[0].y,toNotCheck[0].w,toNotCheck[0].h);
             return (nullRoom);
         }
         private Door popDoorByCoor(int x,int y)
@@ -688,6 +695,86 @@ namespace GenerationMap
             }
             return 0;
         }
+        private int cleanDoorWallV2()
+        {
+            // List<Door> doorsTriee = new List<Door>();
+            int countLoop = doors.Count;
+            for(int i=0; i<countLoop; i++){
+                Door door = doors[0];doors.Remove(door);
+                Point[] drifts = (door.dir == Dir.HORI)? new Point[]{new Point(-1,0),new Point(1,0)}:new Point[]{new Point(0,-1),new Point(0,1)};
+                Door nDoor;
+                bool stop = false;
+                foreach(Point drift in drifts){
+                    if(door.x+drift.x>0 && door.x+drift.x < GRID_W && door.y+drift.y>0 && door.y+drift.y<GRID_H && !stop)
+                    {   
+                        switch(grid[door.x+drift.x,door.y+drift.y]){
+                            case Case.WALL:
+                                Room parent = getRoomByCoor(door.x+drift.x,door.y+drift.y);
+                                if(parent.Equals(nullRoom)) return 2;
+                                grid[door.x+drift.x,door.y+drift.y] = Case.ROOM;
+                                nDoor = new Door(door.x,door.y,door.dir,parent);
+                                parent.doors.Add(nDoor);
+                                door.link.Add(nDoor);
+                                nDoor.link.Add(door);
+                                doorsWall.Add(door);
+                                doorsWall.Add(nDoor);
+                                stop = true;
+                                break;
+                            case Case.CORNER:
+                                Point drift2 = (door.dir == Dir.HORI)? new Point(0,1): new Point(1,0);
+                                if(grid[door.x-drift2.x,door.y-drift2.y] == Case.WALL){
+                                    grid[door.x,door.y]=Case.WALL;
+                                    door.x-=drift2.x;
+                                    door.y-=drift2.y;
+                                    grid[door.x,door.y]=Case.DOOR;
+                                    doors.Remove(door);
+                                    doors.Insert(0,door);
+                                    stop = true;
+                                    countLoop++;
+                                }else if(grid[door.x+drift2.x,door.y+drift2.y] == Case.WALL){
+                                    grid[door.x,door.y]=Case.WALL;
+                                    door.x+=drift2.x;
+                                    door.y+=drift2.y;
+                                    grid[door.x,door.y]=Case.DOOR;
+                                    doors.Remove(door);
+                                    doors.Insert(0,door);
+                                    countLoop++;
+                                    stop=true;
+                                }
+                                break;
+                            case Case.DOOR:
+                                nDoor = popDoorByCoor(door.x+drift.x,door.y+drift.y);
+                                if (nDoor.Equals(nullDoor)) return 1;
+                                grid[door.x,door.y] = Case.ROOM;
+                                door.x+=drift.x;
+                                door.y+=drift.y;
+                                nDoor.link.Add(door);
+                                door.link.Add(nDoor);
+                                doorsWall.Add(door);
+                                doorsWall.Add(nDoor);
+                                stop = true;
+                                break;
+                        }
+                    }
+                }
+                if(!stop && grid[door.x+drifts[0].x,door.y+drifts[0].y]==Case.ROOM && grid[door.x+drifts[1].x,door.y+drifts[1].y]==Case.ROOM)
+                {
+                    // Console.WriteLine("RxR {0} {1}",door.x,door.y);
+                    Room Parent = getRoomByCoor(door.x, door.y, new Room[]{door.room});
+                    if(Parent.Equals(nullRoom)) return 2;
+                    nDoor = new Door(door.x,door.y,door.dir,Parent);
+                    Parent.doors.Add(nDoor);
+                    door.link.Add(nDoor);
+                    nDoor.link.Add(door);
+                    doorsWall.Add(door);
+                    doorsWall.Add(nDoor);
+                    stop = true;
+                }
+                if (!stop)
+                    doors.Add(door);
+            }
+            return 0;
+        }
         private int buildCorridors()
         {
             if(doors.Count == 1)
@@ -730,7 +817,9 @@ namespace GenerationMap
                 {
                     List<Elem> road = corridorV2(door.x,door.y,door.dir,door2link.x,door2link.y,grid4path);
                     if (road.Count == 0){
-                        // Console.WriteLine("start {0} {1} target {2} {3}",door.x,door.y,door2link.x,door2link.y);
+                        Console.WriteLine("start {0} {1} target {2} {3}",door.x,door.y,door2link.x,door2link.y);
+                        grid[door.x,door.y] = Case.ERROR;
+                        grid[door2link.x,door2link.y] = Case.ERROR;
                         return 1;}
                     door.link.Add(door2link);
                     door2link.link.Add(door);
@@ -748,8 +837,12 @@ namespace GenerationMap
                 Door door = doors[0];doors.RemoveAt(0);
                 int i = randint(0,doorsLinked.Count-1);
                 List<Elem> road = corridorV2(door.x,door.y,door.dir,doorsLinked[i].x,doorsLinked[i].y,grid4path);
-                if (road.Count == 0)
+                if (road.Count == 0){
+                    Console.WriteLine("start {0} {1} target {2} {3}",door.x,door.y,doorsLinked[i].x,doorsLinked[i].y);
+                    grid[door.x,door.y] = Case.ERROR;
+                    grid[doorsLinked[i].x,doorsLinked[i].y] = Case.ERROR;
                     return 1;
+                }
                 doorsLinked[i].link.Add(door);
                 door.link.Add(doorsLinked[i]);
                 doorsLinked.Add(door);
@@ -885,25 +978,7 @@ namespace GenerationMap
             for(int x=0; x<GRID_W; x++){
                 for(int y=0; y<GRID_H; y++){
                     Color color = new Color();
-                    
-                    // if (myGrid[x,y] == Case.WALL_UP || myGrid[x,y] == Case.WALL_DOWN || myGrid[x,y] == Case.WALL_RIGHT || myGrid[x,y] == Case.WALL_LEFT)
-                    // {
-                    //     //WALL
-                    //     color = Color.Blue;
-                    // }else if(myGrid[x,y] == Case.WALL_DOUBLE_H || myGrid[x,y] == Case.WALL_DOUBLE_V)
-                    // {
-                    //     //WALL DOUBLE
-                    //     color = Color.BlueViolet;
-                    // }else if(myGrid[x,y] == Case.CORNER_UP_RIGHT || myGrid[x,y] == Case.CORNER_UP_LEFT || myGrid[x,y] == Case.CORNER_DOWN_RIGHT || myGrid[x,y] == Case.CORNER_DOWN_LEFT){
-                    //     //CORNER out
-                    //     color = Color.Green;
-                    // }else if(myGrid[x,y] == Case.CORNER_IN_UP_RIGHT || myGrid[x,y] == Case.CORNER_IN_UP_LEFT || myGrid[x,y] == Case.CORNER_IN_DOWN_RIGHT || myGrid[x,y] == Case.CORNER_IN_DOWN_LEFT){
-                    //     //CORNER in
-                    //     color = Color.GreenYellow;
-                    // }else if(myGrid[x,y] == Case.CORNER_IN_MIDLE_UP|| myGrid[x,y] == Case.CORNER_IN_MIDLE_DOWN || myGrid[x,y] == Case.CORNER_IN_MIDLE_RIGHT || myGrid[x,y] == Case.CORNER_IN_MIDLE_LEFT || myGrid[x,y] == Case.CORNER_IN_MIDLE){
-                    //     //CORNER in midle
-                    //     color = Color.GreenYellow;
-                    // }else 
+                     
                     if( myGrid[x,y] == Case.ROOM || myGrid[x,y] == Case.CORRIDOR){
                         color = Color.White;
                     }else if(myGrid[x,y] == Case.DOOR || myGrid[x,y] == Case.DOOR_H || myGrid[x,y] == Case.DOOR_V){
@@ -912,6 +987,8 @@ namespace GenerationMap
                         color = Color.FromArgb(0,0,0);
                     }else if(myGrid[x,y] == Case.ERROR){
                         color = Color.Red;
+                    }else if(myGrid[x,y] == Case.CORNER){
+                        color = Color.Green;
                     }else if(myGrid[x,y] != Case.VOID) {
                         color = Color.Blue;
                     }
@@ -964,9 +1041,10 @@ namespace GenerationMap
             
             return newGrid;
         }
-        public GenerationMap(int GRID_W_, int GRID_H_, int nbRoom, int minSizeRoom, int maxSizeRoom, int minNbDoor, int maxNbDoor)
+        public GenerationMap(int GRID_W_, int GRID_H_, int nbRoom, int minSizeRoom, int maxSizeRoom, int minNbDoor, int maxNbDoor, int iter = 0)
         {
             bool stop = false;
+            int err = 0;
             while(!stop){
                 stop = true;
                 GRID_W = GRID_W_;
@@ -987,23 +1065,28 @@ namespace GenerationMap
                 }
                 if(createRooms(nbRoom, minSizeRoom, maxSizeRoom)!=0)
                 {
-                    Console.WriteLine("ERROR CREATE ROOMS");
+                    Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" CREATE ROOMS");
+
+                    createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
                     stop = false;
                 }
                 if(createDoors(randint(minNbDoor,maxNbDoor))!=0)
                 {
-                    Console.WriteLine("ERROR CREATE DOORS");
+                    Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" CREATE DOORS");
+                    createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
                     stop = false;
                 }
                 // printGrid();
                 // Console.WriteLine("len doors {0}",doors.Count);
-                switch(cleanDoorWall()) {
+                switch(cleanDoorWallV2()) {
                     case 1:
-                        Console.WriteLine("ERROR CLEAN NULL DOOR DD");
+                        Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" CLEAN NULL DOOR DD");
+                        createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
                         stop = false;
                         break;
                     case 2:
-                        Console.WriteLine("ERROR CLEAN NULL ROOM RxR");
+                        Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" CLEAN NULL ROOM RxR");
+                        createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
                         stop = false;
                         break;
                 }
@@ -1011,7 +1094,8 @@ namespace GenerationMap
                 // Console.WriteLine("len doors {0}",doors.Count);
                 if(buildCorridors()!=0)
                 {
-                    Console.WriteLine("ERROR CREATE CORRIDORS");
+                    Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" CREATE CORRIDORS");
+                    createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
                     stop = false;
                 }
                 // Console.WriteLine("len doors {0}",doors.Count);
@@ -1020,16 +1104,19 @@ namespace GenerationMap
                 switch(blockUnique()) //ne marche pas
                 {
                     case 1:
-                        Console.WriteLine("ERROR UNIFICATE BLOCK INFINIT LOOP");
-                        stop = false;
+                        Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK INFINIT LOOP");
+                        createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
+                        // stop = false;
                         break;
                     case 2:
-                        Console.WriteLine("ERROR UNIFICATE BLOCK ERROR ROAD");
-                        stop = false;
+                        Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK ERROR ROAD");
+                        createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
+                        // stop = false;
                         break;
                     case 3:
-                        Console.WriteLine("ERROR UNIFICATE BLOCK LINKED LIST EMPTY");
-                        stop = false;
+                        Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK LINKED LIST EMPTY");
+                        createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
+                        // stop = false;
                         break;
                 }
                 closeWall();
