@@ -7,8 +7,6 @@ namespace GenerationMap
     enum Dir {
         HORI,VERT
     };  
-
-      
     class GenerationMap
     {
         public int GRID_W = 20;
@@ -22,11 +20,16 @@ namespace GenerationMap
         private Room nullRoom;
         private Door nullDoor;
         
+        private bool coorValide(Point p){ 
+            return (p.x>=0 && p.y>=0 && p.x<GRID_W && p.y<GRID_H);
+        }
+        private bool coorValide(int x, int y){
+            return coorValide(new Point(x,y));
+        }
         private int randint(int min,int max)
         {
             return (new Random()).Next(min,max+1);
         }
-
         private class Room
         {
             public int x,y,w,h;
@@ -80,7 +83,6 @@ namespace GenerationMap
                 init(x_,y_,p_,parent_,dir_,visited_);
             }
         }
-
         public void printGrid()
         {
             Console.Write("   ");
@@ -762,6 +764,49 @@ namespace GenerationMap
             bmp.Save(name, System.Drawing.Imaging.ImageFormat.Png);
             bmp.Dispose();
         }
+        public void createPngV3(string name, Case[,] myGrid, int[,] intGrid,int ratio = 1){
+            Bitmap bmp = new Bitmap(GRID_W*ratio,GRID_H*ratio);
+            // Graphics g = Graphics.FromImage(bmp);
+
+            for(int x=0; x<GRID_W; x++){
+                for(int y=0; y<GRID_H; y++){
+                    Color color = new Color();
+                     
+                    if( myGrid[x,y] == Case.ROOM || myGrid[x,y] == Case.CORRIDOR){
+                        color = Color.White;
+                    }else if(myGrid[x,y] == Case.DOOR || myGrid[x,y] == Case.DOOR_H || myGrid[x,y] == Case.DOOR_V){
+                        color = Color.FromArgb(102,51,0);
+                    }else if(myGrid[x,y] == Case.NULL){
+                        color = Color.FromArgb(0,0,0);
+                    }else if(myGrid[x,y] == Case.ERROR){
+                        color = Color.Red;
+                    }else if(myGrid[x,y] == Case.CORNER){
+                        color = Color.Green;
+                    }else if(myGrid[x,y] == Case.VOID){
+                        if(intGrid[x,y]==0){
+                            color = Color.Black;
+                        }else if(intGrid[x,y]==1 || intGrid[x,y]==4 || intGrid[x,y] == 9){
+                            color = Color.Green;
+                        }else if(intGrid[x,y]==2 || intGrid[x,y]==5 || intGrid[x,y] == 10){
+                            color = Color.Yellow;
+                        }else {
+                            color = Color.DarkBlue;
+                        }
+                    }else {
+                        color = Color.Blue;
+                    }
+                    for(int dx=0; dx<ratio; dx++){
+                        for(int dy=0; dy<ratio; dy++){
+                            bmp.SetPixel(x*ratio+dx,y*ratio+dy,color);
+                        }
+                    }
+                    
+                }
+            }
+            bmp.Save(name, System.Drawing.Imaging.ImageFormat.Png);
+            bmp.Dispose();
+        }
+        
         public Case[,] chageCaseForTilte(){
             Case[,] newGrid = new Case[GRID_W,GRID_H];
             sortCaseList cases = new sortCaseList();
@@ -799,6 +844,53 @@ namespace GenerationMap
             }
             
             return newGrid;
+        }
+        public void contour(int[,] forVoid ,int v=1){
+            Console.WriteLine("initPath {0}",v);
+            int x=0;
+            int y=0;
+            bool stop = false;
+            for(x=0; x<GRID_W && !stop; x++){
+                for(y=0; y<GRID_H && !stop; y++){
+                    if(forVoid[x,y] == 0)
+                        goto test;
+                }
+            }
+            return;
+          test:
+            // Console.WriteLine("X Y {0} {1}",x,y);
+            List<Point> toSee = new List<Point>{new Point(x,y)};
+            int count=0;int count2=0;
+            while (toSee.Count > 0){
+                Point current = toSee[0];toSee.RemoveAt(0);
+                if(forVoid[current.x,current.y] == 0)
+                {
+                    forVoid[current.x,current.y] = v;
+                    
+                    for(x=-1; x<2; x++){
+                        for(y=-1; y<2; y++){
+                            if(coorValide(current.x+x,current.y+y)){
+                                // Console.WriteLine("forVoid[{0},{1}]={2}",current.x+x,current.y+y,forVoid[current.x+x,current.y+y]);
+                                // Console.WriteLine("{0},{1}",current.x,current.y);
+                                // Console.WriteLine("ping");
+                                if(forVoid[current.x+x,current.y+y]==0){
+                                    // Console.WriteLine("pong");
+                                    toSee.Add(new Point(current.x+x,current.y+y));
+                                }
+                            }
+                        }
+                    }
+                }
+                count++;
+                // Console.WriteLine("size {0}",toSee.Count);
+                if(count==1000){
+                    createPngV3("img/"+count2.ToString()+"testZone.png",grid,forVoid,10);
+                    count=0;count2++;
+                }
+            }
+            createPngV3("img/"+v.ToString()+"Zone.png",grid2,forVoid,10);
+            contour(forVoid,v+1);
+            
         }
         public GenerationMap(int GRID_W_, int GRID_H_, int nbRoom, int minSizeRoom, int maxSizeRoom, int minNbDoor, int maxNbDoor, int iter = 0)
         {
@@ -876,15 +968,13 @@ namespace GenerationMap
                         continue;
 
                 }
-                // if(blockUniqueV2() != 0){
-                //     Console.WriteLine("ERROR "+iter.ToString()+"-"+err.ToString()+" UNIFICATE BLOCK 2 NOT LINK");
-                //     createPngV2("img/"+iter.ToString()+"-"+err++.ToString()+"error.png",grid,1);
-                //     stop = false;
-                //     continue;
-                // }
                 closeWall();
             }
             grid2 = chageCaseForTilte();
+
+            // int[,] forVoid = new int[GRID_W,GRID_H];
+            // initGrid4path(forVoid,Case.VOID);
+            // contour(forVoid);
         }
     };
 }
