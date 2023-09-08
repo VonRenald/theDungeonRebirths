@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "1nYz19lsXiK+/Q6GRnOZBrwvybvWuKa/ioGajxl0TaYzjCUBOEzGQOMkITZpOzqfgkxRwInG0QTps9V8P0Pdxg==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Brice Weis\\Documents\\theDungeonRebirths\\csharp\\carreV2\\carreV2.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\bitmap.net\\1.0.1\\bitmap.net.1.0.1.nupkg.sha512",
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\microsoft.win32.systemevents\\7.0.0\\microsoft.win32.systemevents.7.0.0.nupkg.sha512",
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\system.drawing.common\\7.0.0\\system.drawing.common.7.0.0.nupkg.sha512",
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\7.0.8\\microsoft.netcore.app.runtime.win-x64.7.0.8.nupkg.sha512",
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\7.0.8\\microsoft.windowsdesktop.app.runtime.win-x64.7.0.8.nupkg.sha512",
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\7.0.8\\microsoft.aspnetcore.app.runtime.win-x64.7.0.8.nupkg.sha512"
+  ],
+  "logs": []
+}

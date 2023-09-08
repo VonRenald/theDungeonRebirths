@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Drawing;
 
 namespace GenerationDonjon2
@@ -14,20 +14,23 @@ namespace GenerationDonjon2
             // Console.WriteLine("{0}",c);
 
             for(int i=0;i<5;i++){
-                Piece piece = new Piece(15,100,100, 45);
+                Piece piece; // = new Piece(12000,100,100, 65);
+                do{
+                    piece = new Piece(15000,100,100, 65);
+                }while(piece.area>15500);
                 piece.Draw(i.ToString()+"test.png");
-                Console.WriteLine("--");
+                Console.WriteLine("-- {0}",piece.area);
             }
-            for(int i=5;i<10;i++){
-                Piece piece = new Piece(15,100,100, 25);
-                piece.Draw(i.ToString()+"test.png");
-                Console.WriteLine("--");
-            }
-            for(int i=10;i<15;i++){
-                Piece piece = new Piece(15,100,100, 170);
-                piece.Draw(i.ToString()+"test.png");
-                Console.WriteLine("--");
-            }
+            // for(int i=5;i<10;i++){
+            //     Piece piece = new Piece(15,100,100, 25);
+            //     piece.Draw(i.ToString()+"test.png");
+            //     Console.WriteLine("--");
+            // }
+            // for(int i=10;i<15;i++){
+            //     Piece piece = new Piece(15,100,100, 170);
+            //     piece.Draw(i.ToString()+"test.png");
+            //     Console.WriteLine("--");
+            // }
             
             return 0;
         }

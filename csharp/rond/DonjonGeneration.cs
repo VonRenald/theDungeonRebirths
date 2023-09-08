@@ -150,7 +150,16 @@ namespace GenerationDonjon2
             }
             return false;
         }
+        public static int CalculatePolygonArea(List<Point> pts)
+        {
+            int area = 0;
+            for (int i = 0; i < pts.Count() - 1; i++)
+            {
+                area += (pts[i].x * pts[(i + 1)%pts.Count()].y) - (pts[(i + 1)%pts.Count()].x * pts[i].y);
+            }
 
+            return (int)Math.Abs(area / 2);
+        }
 
         //VAR
         public List<Cercle> cercles = new List<Cercle>();
@@ -158,6 +167,7 @@ namespace GenerationDonjon2
         public List<Point> outPoints = new List<Point>();
         public List<Point> wall = new List<Point>();
         public List<Point> wallreduce = new List<Point>();
+        public int area = 0;
 
         public static List<Point> ConvexHull(List<Point> points)
         {
@@ -247,13 +257,13 @@ namespace GenerationDonjon2
         }
 
 
-        public Piece(int nbCercles=3, int StartX=0, int StartY=0, int angleBan = 120)
+        public Piece(int areaGoalmin = 0, int StartX=0, int StartY=0, int angleBan = 120, int areaGoalmax = 0)
         {
             random rand = new random();
 
             List<Point> toDo = new List<Point>{new Point(StartX+rand.randint(-20,20),StartY+rand.randint(-20,20)),
                 new Point(StartX,StartY)};
-            while( cercles.Count< nbCercles){
+            while(areaGoalmin > area ){
                 Point oldP = toDo[0];toDo.RemoveAt(0);
                 Point startP = toDo[0];toDo.RemoveAt(0);
             //   reloop:
@@ -267,21 +277,17 @@ namespace GenerationDonjon2
                     agl = angle(startP,P,oldP);
                     stop = r >=5 && agl >= angleBan && agl < 360-angleBan;
                 }while(!stop);
-                Cercle cercle = new Cercle(P,r);cercle.old = startP;
-                cercles.Add(cercle);
+                Cercle cercle_ = new Cercle(P,r);cercle_.old = startP;
+                cercles.Add(cercle_);
                 toDo.Add(startP);toDo.Add(P);
                 if(rand.randint(0,9) == 0) {
-                    Console.WriteLine("reloop");
-                    // goto reloop;
                     drift.x = -drift.x;
                     P = startP + drift;
                     r = startP.getDist(P);
-                    cercle = new Cercle(P,r);cercle.old = startP;
-                    cercles.Add(cercle);
+                    cercle_ = new Cercle(P,r);cercle_.old = startP;
+                    cercles.Add(cercle_);
                     toDo.Add(startP);toDo.Add(P);
                 }
-
-            }
 
             float[] XdriftNorm = {  1.0f,0.5f,-0.5f,-1.0f,-0.5f,0.5f}; 
             float[] YdriftNorm = {  0.0f,(float)Math.Sqrt(3)/2.0f, (float)Math.Sqrt(3)/2.0f,
@@ -301,7 +307,9 @@ namespace GenerationDonjon2
             }
             
             wall = ConvexHull(outPoints);
-            wallreduce = reduceWall(outPoints,wall);
+            // wallreduce = reduceWall(outPoints,wall);
+            area = CalculatePolygonArea(wall);
+            }
         }
 
         public void Draw(String str)
@@ -322,28 +330,29 @@ namespace GenerationDonjon2
             Console.WriteLine("{0} {1}",drift, cercles[0].center);
             drift.x =cercles[0].center.x-drift.x; drift.y =cercles[0].center.y-drift.y;
             Console.WriteLine("{0}",drift);
-            // foreach(Cercle c in cercles)
-            // {
+            foreach(Cercle c in cercles)
+            {
                 
-            //     g.DrawEllipse(bluePen, c.center.x-c.radius+drift.x, c.center.y-c.radius+drift.y, 2*c.radius, 2*c.radius);
-            //     // g.DrawLine(redPen,startP.x,startP.y,c.center.x,c.center.y);
-            //     // bmp.SetPixel(startP.x,startP.y,Color.Red);
-            //     // bmp.SetPixel(c.center.x,c.center.y,Color.Green);
+                g.DrawEllipse(bluePen, c.center.x-c.radius+drift.x, c.center.y-c.radius+drift.y, 2*c.radius, 2*c.radius);
+                // g.DrawLine(redPen,startP.x,startP.y,c.center.x,c.center.y);
+                // bmp.SetPixel(startP.x,startP.y,Color.Red);
+                // bmp.SetPixel(c.center.x,c.center.y,Color.Green);
                 
-            // }
+            }
             // foreach(Cercle c in cercles)
             // {
             //     g.DrawLine(redPen,c.old.x+drift.x,c.old.y+drift.y,c.center.x+drift.x,c.center.y+drift.y);
             //     // startP = c.center;
             // }
-            // foreach(Point p in outPoints){
-            //     if(p.x>0 && p.y>0 && p.x <200 && p.y <200)
-            //         bmp.SetPixel(p.x+drift.x,p.y+drift.y,Color.Red);
-            // }
-            // foreach(Point p in inPoints){
-            //     if(p.x+drift.x>0 && p.y+drift.y>0 && p.x+drift.x <200 && p.y+drift.y <200)
-            //         bmp.SetPixel(p.x+drift.x,p.y+drift.y,Color.Green);
-            // }
+            foreach(Point p in outPoints){
+                if(p.x+drift.x>=0 && p.y+drift.y>=0 && p.x+drift.x <200 && p.y+drift.y <200){
+                    bmp.SetPixel(p.x+drift.x,p.y+drift.y,Color.Red);
+                }
+            }
+            foreach(Point p in inPoints){
+                if(p.x+drift.x>0 && p.y+drift.y>0 && p.x+drift.x <200 && p.y+drift.y <200)
+                    bmp.SetPixel(p.x+drift.x,p.y+drift.y,Color.Green);
+            }
 
             for(int i=0; i<wall.Count-1; i++){
                 g.DrawLine(redPen, wall[i].x+drift.x, wall[i].y+drift.y, wall[i+1].x+drift.x, wall[i+1].y+drift.y);

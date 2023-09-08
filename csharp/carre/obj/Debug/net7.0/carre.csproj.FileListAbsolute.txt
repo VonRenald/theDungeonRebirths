@@ -1,0 +1,5 @@
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\carre\obj\Debug\net7.0\carre.csproj.AssemblyReference.cache
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\carre\obj\Debug\net7.0\carre.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\carre\obj\Debug\net7.0\carre.AssemblyInfoInputs.cache
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\carre\obj\Debug\net7.0\carre.AssemblyInfo.cs
+C:\Users\Brice Weis\Documents\theDungeonRebirths\csharp\carre\obj\Debug\net7.0\carre.csproj.CoreCompileInputs.cache

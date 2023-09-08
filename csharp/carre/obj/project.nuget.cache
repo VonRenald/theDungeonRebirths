@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "v6tXmiCv5udb8A4WlmYAqV7xx0uZtPnkO7sz0ZyMMX4v7hXCRCh2CxfuB7ClMOQ0nBA4dXVBr21L35XK7iMb8w==",
+  "dgSpecHash": "vqZgkiX5FRUsWRjEWEMjVCoJ5b49s88TV4lqIEaDIDnDZNekCsX2cy4pOhNRsIi/+pvgAJFcCU6/WuafXjIWbw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Brice Weis\\Documents\\theDungeonRebirths\\csharp\\csharp.csproj",
+  "projectFilePath": "c:\\Users\\Brice Weis\\Documents\\theDungeonRebirths\\csharp\\carre\\carre.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Brice Weis\\.nuget\\packages\\microsoft.win32.systemevents\\7.0.0\\microsoft.win32.systemevents.7.0.0.nupkg.sha512",
-    "C:\\Users\\Brice Weis\\.nuget\\packages\\system.drawing.common\\7.0.0\\system.drawing.common.7.0.0.nupkg.sha512"
+    "C:\\Users\\Brice Weis\\.nuget\\packages\\bitmap.net\\1.0.1\\bitmap.net.1.0.1.nupkg.sha512"
   ],
   "logs": []
 }
